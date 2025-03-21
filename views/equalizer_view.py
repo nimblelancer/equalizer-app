@@ -23,13 +23,23 @@ class EqualizerView(ttk.Labelframe):
         control_frame.grid(row=0, column=0, columnspan=9, sticky="ew", pady=5)
 
         for i in range(5):
-            control_frame.columnconfigure(i, weight=1)  # Căn chỉnh độ rộng
+            control_frame.columnconfigure(i, weight=1)
 
-        # Switch On/Off
+        # Switch On/Off với trace
         self.eq_status = ttk.BooleanVar(value=True)
-        self.switch = ttk.Checkbutton(control_frame, variable=self.eq_status, text="On",
-                                      bootstyle="round-toggle", command=self.toggle_equalizer)
+        self.eq_status.trace_add('write', lambda *args: self.toggle_equalizer())
+
+        self.switch = ttk.Checkbutton(
+            control_frame, variable=self.eq_status,
+            text="On", bootstyle="round-toggle"
+        )
         self.switch.grid(row=0, column=4, padx=5)
+
+    def toggle_equalizer(self):
+        """Bật/tắt Equalizer (mượt mà, đồng bộ hơn)"""
+        status = self.eq_status.get()
+        self.switch.configure(text="Equalizer: ON" if status else "Equalizer: OFF")
+        # Optional: update UI hoặc disable các controls nếu cần
 
     def create_equalizer_bands(self):
         col = 0
