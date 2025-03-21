@@ -48,14 +48,36 @@ class AudioPlayerView(ttk.Labelframe):
     
     def create_buttonbox(self):
         """Tạo các nút điều khiển nhạc"""
-        container = ttk.Frame(self)
-        container.pack(fill=X)
         
+        container = ttk.Frame(self)
+        container.pack(fill=X, pady=5)
+
+        # Các nút control cơ bản
         ttk.Button(container, text='Open', command=self.open_file).pack(side=LEFT, fill=X, expand=YES)
         ttk.Button(container, text='Play', command=self.play_music).pack(side=LEFT, fill=X, expand=YES)
         ttk.Button(container, text='Pause', command=self.pause_music).pack(side=LEFT, fill=X, expand=YES)
         ttk.Button(container, text='Stop', command=self.stop_music).pack(side=LEFT, fill=X, expand=YES)
-    
+
+        # Voice Button
+        ttk.Button(container, text='Voice', command=self.voice_action).pack(side=LEFT, fill=X, expand=YES)
+
+        # Volume control
+        volume_container = ttk.Frame(self)
+        volume_container.pack(fill=X, pady=10)
+
+        ttk.Label(volume_container, text="Volume").pack(side=LEFT, padx=5)
+
+        self.volume_var = ttk.IntVar(value=50)
+        self.volume_slider = ttk.Scale(
+            master=volume_container,
+            from_=1,
+            to=100,
+            orient=HORIZONTAL,
+            variable=self.volume_var,
+            command=self.on_volume_change
+        )
+        self.volume_slider.pack(side=LEFT, fill=X, expand=YES, padx=5)
+        
     def open_file(self):
         """Chọn file nhạc từ máy"""
         file_path = filedialog.askopenfilename()
@@ -95,3 +117,12 @@ class AudioPlayerView(ttk.Labelframe):
 
         self.elapse_label.config(text=self.player.format_time(elapse))
         self.remain_label.config(text=self.player.format_time(remain_tot))
+
+    def voice_action(self):
+        """Xử lý khi nhấn Voice"""
+        print("Voice button clicked!")
+
+    def on_volume_change(self, val):
+        """Xử lý khi thay đổi Volume"""
+        volume = int(float(val))
+        print(f"Volume set to: {volume}")

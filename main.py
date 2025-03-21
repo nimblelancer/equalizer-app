@@ -30,11 +30,11 @@ class MainApplication(ttk.Window):
         
         # Tạo GraphView ở cột bên phải
         self.graph_view = GraphView(self, self.style)
-        self.graph_view.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+        self.graph_view.grid(row=0, column=1, rowspan=2, sticky="nsew", padx=10, pady=10)
         
         # Tạo EqualizerView ở hàng dưới, trải dài cả 2 cột
         self.equalizer = EqualizerView(self)
-        self.equalizer.grid(row=1, column=0, columnspan=2, sticky="nsew", padx=10, pady=10)
+        self.equalizer.grid(row=1, column=0, columnspan=1, sticky="nsew", padx=10, pady=10)
         
         # Kết nối các thành phần
         self.connect_components()
