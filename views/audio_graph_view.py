@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-class GraphView(tk.LabelFrame):
+class AudioGraphView(tk.LabelFrame):
     def __init__(self, parent, style):
         self.style = style
         super().__init__(parent, text="Audio Analysis Graphs")

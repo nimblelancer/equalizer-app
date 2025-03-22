@@ -7,7 +7,7 @@ from tkinter import filedialog
 from models import AudioPlayerModel
 from core import EqualizerService, PyAudioStreamWrapper
 from viewmodels.audio_player_viewmodel import AudioPlayerViewModel
-from views.graph_view import GraphView  # Import GraphView từ file của bạn
+from views.audio_graph_view import AudioGraphView  # Import GraphView từ file của bạn
 from views.audio_player_view import AudioPlayerView  # Import GraphView từ file của bạn
 from views.equalizer_view import EqualizerView  # Import GraphView từ file của bạn
 
@@ -35,13 +35,13 @@ class MainApplication(ttk.Window):
         self.audio_player_view = AudioPlayerView(left_frame, audio_player_viewmodel)
         
         # Tạo GraphView ở cột bên phải
-        self.graph_view = GraphView(self, self.style)
+        self.graph_view = AudioGraphView(self, self.style)
         self.graph_view.grid(row=0, column=1, rowspan=2, sticky="nsew", padx=10, pady=10)
         
         # Tạo EqualizerView ở hàng dưới, trải dài cả 2 cột
         self.equalizer = EqualizerView(self)
         self.equalizer.grid(row=1, column=0, columnspan=1, sticky="nsew", padx=10, pady=10)
-        
+                
         # Kết nối các thành phần
         # self.connect_components()
         
