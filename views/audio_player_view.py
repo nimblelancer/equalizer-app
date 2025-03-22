@@ -2,17 +2,14 @@ from pathlib import Path
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from PIL import Image, ImageTk
-from tkinter import filedialog
 from models import AudioPlayerModel
 
 class AudioPlayerView(ttk.Labelframe):
-    def __init__(self, master):
+    def __init__(self, master, view_model):
         super().__init__(master, text="Audio Player", padding=5)
+        self.view_model = view_model
+        self.view_model.set_view(self)
         self.pack(fill=BOTH, expand=YES)
-        
-        self.player = AudioPlayerModel()
-        self.player.elapsed_var = ttk.DoubleVar(value=0)
-        self.player.remain_var = ttk.DoubleVar(value=190)
         self.create_media_window()
         self.create_progress_meter()
         self.create_buttonbox()
@@ -36,13 +33,13 @@ class AudioPlayerView(ttk.Labelframe):
         
         self.scale = ttk.Scale(
             master=container, 
-            command=self.on_progress, 
+            command=self.view_model.on_progress, 
             from_=0,
             to=100,
             value=0
         )
         self.scale.pack(side=LEFT, fill=X, expand=YES)
-        
+        self.scale.bind("<ButtonRelease-1>", self.view_model.on_progress_release)
         self.remain_label = ttk.Label(container, text='00:00')
         self.remain_label.pack(side=LEFT, padx=5)
     
@@ -53,13 +50,13 @@ class AudioPlayerView(ttk.Labelframe):
         container.pack(fill=X, pady=5)
 
         # Các nút control cơ bản
-        ttk.Button(container, text='Open', command=self.open_file).pack(side=LEFT, fill=X, expand=YES)
-        ttk.Button(container, text='Play', command=self.play_music).pack(side=LEFT, fill=X, expand=YES)
-        ttk.Button(container, text='Pause', command=self.pause_music).pack(side=LEFT, fill=X, expand=YES)
-        ttk.Button(container, text='Stop', command=self.stop_music).pack(side=LEFT, fill=X, expand=YES)
+        ttk.Button(container, text='Open', command=self.view_model.select_file).pack(side=LEFT, fill=X, expand=YES)
+        ttk.Button(container, text='Play', command=self.view_model.play_audio).pack(side=LEFT, fill=X, expand=YES)
+        ttk.Button(container, text='Pause', command=self.view_model.pause_audio).pack(side=LEFT, fill=X, expand=YES)
+        ttk.Button(container, text='Stop', command=self.view_model.stop_audio).pack(side=LEFT, fill=X, expand=YES)
 
         # Voice Button
-        ttk.Button(container, text='Voice', command=self.voice_action).pack(side=LEFT, fill=X, expand=YES)
+        ttk.Button(container, text='Voice', command=self.view_model.voice_action).pack(side=LEFT, fill=X, expand=YES)
 
         # Volume control
         volume_container = ttk.Frame(self)
@@ -74,55 +71,6 @@ class AudioPlayerView(ttk.Labelframe):
             to=100,
             orient=HORIZONTAL,
             variable=self.volume_var,
-            command=self.on_volume_change
+            command=self.view_model.setting_volume
         )
         self.volume_slider.pack(side=LEFT, fill=X, expand=YES, padx=5)
-        
-    def open_file(self):
-        """Chọn file nhạc từ máy"""
-        file_path = filedialog.askopenfilename()
-        if file_path:
-            self.player.load_file(file_path)
-            self.play_music()
-    
-    def play_music(self):
-        """Phát nhạc và cập nhật thanh progress"""
-        self.player.play_music(self.update_progress)
-    
-    def pause_music(self):
-        """Tạm dừng nhạc"""
-        self.player.pause_music()
-    
-    def stop_music(self):
-        """Dừng nhạc và reset thanh progress"""
-        self.player.stop_music(self.update_progress)
-    
-    def update_progress(self, elapsed, duration):
-        """Cập nhật thanh progress khi bài hát chạy"""
-        if duration > 0:
-            progress = (elapsed / duration) * 100
-            self.scale.set(progress)  # Cập nhật thanh trượt progress bar
-            self.elapse_label.config(text=self.player.format_time(int(elapsed)))  # Chuyển elapsed về int
-            self.remain_label.config(text=self.player.format_time(int(duration - elapsed))) 
-    
-    def on_progress(self, val):
-        """Update progress labels when the scale is updated."""
-        total = self.player.duration
-
-        elapse = int(float(val) * total)
-        remain_tot = total - elapse
-
-        self.player.elapsed_var = elapse
-        self.player.remain_var = remain_tot
-
-        self.elapse_label.config(text=self.player.format_time(elapse))
-        self.remain_label.config(text=self.player.format_time(remain_tot))
-
-    def voice_action(self):
-        """Xử lý khi nhấn Voice"""
-        print("Voice button clicked!")
-
-    def on_volume_change(self, val):
-        """Xử lý khi thay đổi Volume"""
-        volume = int(float(val))
-        print(f"Volume set to: {volume}")
