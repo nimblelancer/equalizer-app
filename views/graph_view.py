@@ -10,47 +10,70 @@ class GraphView(tk.LabelFrame):
         self.theme_bg = self.get_theme_background()
         self.theme_fg = self.get_theme_foreground()
         
-        # Tạo Figure chứa biểu đồ
-        self.fig = Figure(figsize=(5, 5), dpi=100, facecolor=self.theme_bg)
-        self.fig.subplots_adjust(left=0.08, right=0.92, top=0.95, bottom=0.08)
-        self.fig.subplots_adjust(hspace=0.3, wspace=0.3)
+        # Dynamically get screen width & height to adjust figsize
+        screen_width = parent.winfo_screenwidth()
+        screen_height = parent.winfo_screenheight()
 
-        # Tạo 6 Subplots (3 hàng, 2 cột)
-        # Hàng 1: Frequency Response
+        # Điều chỉnh theo cả width và height
+        if screen_width < 1300 or screen_height < 700:  # Màn nhỏ
+            print("Small screen detected")
+            figsize = (2, 2)
+            self.title_size = 7
+            self.label_size = 6
+            self.tick_size = 5
+            hspace = 0.5
+            wspace = 0.4
+        elif screen_width < 1700 or screen_height < 900:  # Màn trung bình
+            print("Medium screen detected")
+            figsize = (4, 4)
+            self.title_size = 9
+            self.label_size = 8
+            self.tick_size = 7
+            hspace = 0.4
+            wspace = 0.3
+        else:  # Màn lớn
+            print("Large screen detected")
+            figsize = (4, 4)
+            self.title_size = 8
+            self.label_size = 7
+            self.tick_size = 6
+            hspace = 0.4
+            wspace = 0.3
+        
+        # Figure
+        self.fig = Figure(figsize=figsize, dpi=100, facecolor=self.theme_bg)
+        self.fig.subplots_adjust(left=0.08, right=0.95, top=0.95, bottom=0.08)
+        self.fig.subplots_adjust(hspace=hspace, wspace=wspace)
+
+        # 6 Subplots
         self.ax_resp_orig = self.fig.add_subplot(321)
         self.set_ax_style(self.ax_resp_orig, "Original Response")
         
         self.ax_resp_eq = self.fig.add_subplot(322)
         self.set_ax_style(self.ax_resp_eq, "Equalized Response")
         
-        # Hàng 2: Frequency Spectrum
         self.ax_spec_orig = self.fig.add_subplot(323)
         self.set_ax_style(self.ax_spec_orig, "Spectrum - Original")
         
         self.ax_spec_eq = self.fig.add_subplot(324)
         self.set_ax_style(self.ax_spec_eq, "Spectrum - Equalized")
         
-        # Hàng 3: Waveform
         self.ax_wave_orig = self.fig.add_subplot(325)
         self.set_ax_style(self.ax_wave_orig, "Waveform - Original")
         
         self.ax_wave_eq = self.fig.add_subplot(326)
         self.set_ax_style(self.ax_wave_eq, "Waveform - Equalized")
 
-        # Tạo dữ liệu giả lập cho tất cả các biểu đồ
+        # Dummy data & Canvas
         self.init_data()
-        
-        # Nhúng Figure vào Tkinter
         self.canvas = FigureCanvasTkAgg(self.fig, master=self)
         self.canvas_widget = self.canvas.get_tk_widget()
         self.canvas_widget.grid(row=0, column=0, sticky="nsew")
         
-        # Cấu hình layout
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
-        
-        # Vẽ tất cả các biểu đồ
         self.plot_all_graphs()
+
 
     def init_data(self):
         """Khởi tạo tất cả dữ liệu cho các biểu đồ"""
@@ -140,28 +163,27 @@ class GraphView(tk.LabelFrame):
         self.update_waveform()
 
     def set_ax_style(self, ax, title):
-        """Định dạng màu chữ và màu nền cho từng subplot"""
         ax.set_facecolor(self.theme_bg)
-        ax.set_title(title, color=self.theme_fg)
+        ax.set_title(title, color=self.theme_fg, size=self.title_size, loc='left')
         
-        # Thêm nhãn phù hợp dựa trên loại biểu đồ
+        # Labels
         if "Response" in title:
-            ax.set_xlabel("Frequency (Hz)", color=self.theme_fg)
-            ax.set_ylabel("Amplitude (dB)", color=self.theme_fg)
+            ax.set_xlabel("Frequency (Hz)", color=self.theme_fg, size=self.label_size)
+            ax.set_ylabel("Amplitude (dB)", color=self.theme_fg, size=self.label_size)
         elif "Spectrum" in title:
-            ax.set_xlabel("Frequency (Hz)", color=self.theme_fg)
-            ax.set_ylabel("Amplitude", color=self.theme_fg)
+            ax.set_xlabel("Frequency (Hz)", color=self.theme_fg, size=self.label_size)
+            ax.set_ylabel("Amplitude", color=self.theme_fg, size=self.label_size)
         elif "Waveform" in title:
-            ax.set_xlabel("Time (ms)", color=self.theme_fg)
-            ax.set_ylabel("Amplitude", color=self.theme_fg)
+            ax.set_xlabel("Time (ms)", color=self.theme_fg, size=self.label_size)
+            ax.set_ylabel("Amplitude", color=self.theme_fg, size=self.label_size)
         
-        # Cập nhật màu chữ cho trục x và y
-        ax.tick_params(axis='x', colors=self.theme_fg)
-        ax.tick_params(axis='y', colors=self.theme_fg)
-        
-        # Cập nhật màu viền
+        # Ticks
+        ax.tick_params(axis='x', colors=self.theme_fg, labelsize=self.tick_size)
+        ax.tick_params(axis='y', colors=self.theme_fg, labelsize=self.tick_size)
+    
         for spine in ax.spines.values():
             spine.set_color(self.theme_fg)
+
 
     def get_theme_background(self):
         """Lấy màu nền từ theme hiện tại của ttkbootstrap"""
