@@ -1,47 +1,65 @@
-import tkinter as tk
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 from scipy.fft import fft, fftfreq
 
 class AudioSpectrumGraphView:
-    def __init__(self, parent, framerate=44100, buffer_size=1024*10):
-        self.canvas_frame = tk.Frame(parent)
-        self.canvas_frame.pack()
+    def __init__(self, parent, framerate=44100, buffer_size=1024*10, theme_colors=None):
+        self.theme_colors = theme_colors or {}
+        self.canvas_frame = ttk.Frame(parent, padding=10)
+        self.canvas_frame.pack(fill=BOTH, expand=YES)
         self.canvas = None
-        self.g1 = None  # Đồ thị biên độ theo thời gian
-        self.g2 = None  # Đồ thị phổ tần số của dữ liệu âm thanh
-        self.g3 = None  # Đồ thị phổ tần số của dữ liệu đã lọc
+        self.g1 = None
+        self.g2 = None
+        self.g3 = None
         self.framerate = framerate
         self.buffer_size = buffer_size
 
     def show_graph(self):
-        # Tạo đồ thị nếu chưa tạo
         if self.canvas is None:
-            fig, axs = plt.subplots(2, 1, figsize=(10, 9))
+            fig_bg = self.theme_colors.get("bg", "#2e2e2e")
+            fg_color = self.theme_colors.get("fg", "white")
 
-            # Tạo đồ thị biên độ theo thời gian (g1)
-            self.g1, = axs[0].plot([], [], label='Audio Signal', color='b')
+            fig, axs = plt.subplots(2, 1, figsize=(10, 9), facecolor=fig_bg)
+
+            # Tăng khoảng cách giữa 2 biểu đồ
+            fig.subplots_adjust(hspace=0.5) # Đơn vị là độ
+
+            for ax in axs:
+                ax.set_facecolor(fig_bg)
+                ax.title.set_color(fg_color)
+                ax.xaxis.label.set_color(fg_color)
+                ax.yaxis.label.set_color(fg_color)
+                ax.tick_params(axis='x', colors=fg_color)
+                ax.tick_params(axis='y', colors=fg_color)
+                ax.spines['bottom'].set_color(fg_color)
+                ax.spines['top'].set_color(fg_color)
+                ax.spines['left'].set_color(fg_color)
+                ax.spines['right'].set_color(fg_color)
+
+            self.g1, = axs[0].plot([], [], label='Audio Signal', color=self.theme_colors.get("line1", "#00BFFF"))
             axs[0].set_xlim(0, self.buffer_size)
             axs[0].set_ylim(-1, 1)
-            axs[0].set_title("Audio Signal - Time Domain")
+            axs[0].set_title("Audio Signal - Time Domain", size=15)
             axs[0].set_xlabel("Samples")
             axs[0].set_ylabel("Amplitude")
 
-            # Tạo đồ thị phổ tần số (g2 cho audio_data và g3 cho filtered_data)
-            self.g2, = axs[1].plot([], [], label='Audio Signal Spectrum', color='b')
-            self.g3, = axs[1].plot([], [], label='Filtered Signal Spectrum', color='r')
-            axs[1].set_xlim(0, self.framerate // 2)  # Xem phổ tần số từ 0 đến Nyquist frequency
-            axs[1].set_ylim(0, 1)  # Quy mô phổ tần số
-            axs[1].set_title("Frequency Spectrum")
+            self.g2, = axs[1].plot([], [], label='Audio Signal Spectrum', color=self.theme_colors.get("line1", "#00BFFF"))
+            self.g3, = axs[1].plot([], [], label='Filtered Signal Spectrum', color=self.theme_colors.get("line2", "#FF4500"))
+            axs[1].set_xlim(0, self.framerate // 2)
+            axs[1].set_ylim(0, 1)
+            axs[1].set_title("Frequency Spectrum", size=15)
             axs[1].set_xlabel("Frequency (Hz)")
             axs[1].set_ylabel("Magnitude")
-            axs[1].legend()
+            axs[1].legend(facecolor=fig_bg, edgecolor=fg_color, labelcolor=fg_color)
 
-            # Đặt đồ thị vào Tkinter canvas
             self.canvas = FigureCanvasTkAgg(fig, master=self.canvas_frame)
             self.canvas.draw()
-            self.canvas.get_tk_widget().pack()
+            self.canvas.get_tk_widget().pack(fill=BOTH, expand=YES)
+
+
 
     def plot_spectrum(self, audio_data, filtered_data):
         """Vẽ đồ thị phổ tần số của dữ liệu âm thanh và đã lọc"""
@@ -72,3 +90,4 @@ class AudioSpectrumGraphView:
 
         # Cập nhật đồ thị
         self.canvas.draw()
+
