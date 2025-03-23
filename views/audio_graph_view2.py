@@ -1,42 +1,51 @@
-import tkinter as tk
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import ttkbootstrap as ttk
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.fft import fft, fftfreq
 import time
-from core.graph.mathplotlib_renderer import MatplotlibRenderer
 from views.audio_spectrum_graphview import AudioSpectrumGraphView
 
 class AudioGraphView2:
     def __init__(self, root, view_model):
-        self.frame = tk.Frame(root)
+        self.style = ttk.Style()  # Lấy style từ ttkbootstrap
+
+        self.frame = ttk.Frame(root)
         self.frame.pack()
 
-        # Tạo một frame chứa các button
-        self.config_frame = tk.Frame(self.frame)
+        self.config_frame = ttk.Frame(self.frame)
         self.config_frame.pack(pady=20)
 
-        # Checkbutton để bật/tắt đồ thị
-        self.show_graph_var = tk.IntVar()
-        self.show_graph_checkbox = tk.Checkbutton(self.config_frame, text="Show Graph", variable=self.show_graph_var, command=self.show_graph)
-        self.show_graph_var.set(1)
-        self.show_graph_checkbox.pack(side=tk.LEFT, padx=5)
+        # Lấy màu từ theme hiện tại
+        bg_color = self.style.lookup("TFrame", "background")
+        fg_color = self.style.lookup("TLabel", "foreground")
 
-        # Tạo instance của GraphView
-        self.graph_view = AudioSpectrumGraphView(self.frame)
+        # Truyền style cho AudioSpectrumGraphView
+        self.graph_view = AudioSpectrumGraphView(
+            self.frame,
+            theme_colors={
+                "bg": bg_color or "#2e2e2e",
+                "fg": fg_color or "white",
+                "line1": "#00BFFF",
+                "line2": "#FF4500"
+            }
+        )
 
+        self.view_model = view_model
+        # Mặc định hiển thị đồ thị
+        self.view_model.toggle_graph(True)
+        self.graph_view.show_graph()
+        
         # Nhập tần số thấp nhất và cao nhất để giới hạn trục tần số
-        self.freq_low_label = tk.Label(self.config_frame, text="Low Frequency (Hz):")
-        self.freq_low_label.pack(side=tk.LEFT, padx=5)
-        self.freq_low_entry = tk.Entry(self.config_frame)
-        self.freq_low_entry.pack(side=tk.LEFT, padx=5)
-        self.freq_low_entry.insert(tk.END, "20")  # Giá trị mặc định là 20Hz
+        self.freq_low_label = ttk.Label(self.config_frame, text="Low Frequency (Hz):")
+        self.freq_low_label.pack(side=ttk.LEFT, padx=5)
+        self.freq_low_entry = ttk.Entry(self.config_frame, width=10)
+        self.freq_low_entry.pack(side=ttk.LEFT, padx=5)
+        self.freq_low_entry.insert(ttk.END, "20")  # Giá trị mặc định là 20Hz
 
-        self.freq_high_label = tk.Label(self.config_frame, text="High Frequency (Hz):")
-        self.freq_high_label.pack(side=tk.LEFT, padx=5)
-        self.freq_high_entry = tk.Entry(self.config_frame)
-        self.freq_high_entry.pack(side=tk.LEFT, padx=5)
-        self.freq_high_entry.insert(tk.END, "5000")  # Giá trị mặc định là 5000Hz
+        self.freq_high_label = ttk.Label(self.config_frame, text="High Frequency (Hz):")
+        self.freq_high_label.pack(side=ttk.LEFT, padx=5)
+        self.freq_high_entry = ttk.Entry(self.config_frame, width=10)
+        self.freq_high_entry.pack(side=ttk.LEFT, padx=5)
+        self.freq_high_entry.insert(ttk.END, "5000")  # Giá trị mặc định là 5000Hz
 
         self.view_model = view_model
         self.view_model.add_view_listener(self)
@@ -51,11 +60,6 @@ class AudioGraphView2:
         self.last_update_time = time.time()  # Thời gian của lần cập nhật cuối cùng
 
         self.framerate = 44100  # Framerate 44100 Hz
-
-    def show_graph(self):
-        self.view_model.toggle_graph(self.show_graph_var.get())
-        if self.show_graph_var.get():
-            self.graph_view.show_graph()
 
     def plot_spectrum(self, audio_data, filtered_data):
         """Vẽ đồ thị phổ tần số của dữ liệu âm thanh và đã lọc"""
@@ -94,7 +98,7 @@ class AudioGraphView2:
         elif len(audio_data) > target_size:
             audio_data = audio_data[:target_size]
         return audio_data
-    
+
     def normalize_audio_data(self, audio_data):
         """Chuẩn hóa dữ liệu âm thanh vào phạm vi [-1, 1]"""
         max_val = np.max(np.abs(audio_data))
