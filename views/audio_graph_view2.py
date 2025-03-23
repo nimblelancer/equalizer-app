@@ -29,9 +29,11 @@ class AudioGraphView2:
             }
         )
 
+        self.view_model = view_model
         # Mặc định hiển thị đồ thị
+        self.view_model.toggle_graph(True)
         self.graph_view.show_graph()
-
+        
         # Nhập tần số thấp nhất và cao nhất để giới hạn trục tần số
         self.freq_low_label = ttk.Label(self.config_frame, text="Low Frequency (Hz):")
         self.freq_low_label.pack(side=ttk.LEFT, padx=5)
