@@ -1,5 +1,0 @@
-numpy
-ttkbootstrap
-pygame
-mutagen
-matplotlib

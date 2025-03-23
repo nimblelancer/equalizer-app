@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.signal import butter, lfilter
-from base.base_viewmodel import G2BaseViewModel
+from viewmodels.base_viewmodel import G2BaseViewModel
 from models.audio_player_model import AudioPlayerModel
 
 class AudioGraphViewModel(G2BaseViewModel):

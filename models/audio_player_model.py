@@ -1,11 +1,10 @@
 import threading
 import numpy as np
-from base.base_audio_stream import G2AudioStream
-from base.base_model import G2BaseModel
+from core.player.base_audio_stream import G2AudioStream
+from models.base_model import G2BaseModel
 import wave
-from core import EqualizerService
+from core.player.equalizer_service2 import EqualizerService2
 from typing import Type
-import time
 
 class AudioPlayerState:
     STOPPED = 0
@@ -14,14 +13,14 @@ class AudioPlayerState:
     RECORDING = 3
 
 class AudioPlayerModel(G2BaseModel):
-    def __init__(self, audio_stream_class: Type[G2AudioStream], eq_service: EqualizerService):
+    def __init__(self, audio_stream_class: Type[G2AudioStream], eq_service: EqualizerService2):
         super().__init__()
 
         self.state = AudioPlayerState.STOPPED
         self.audio_stream = None
         self.audio_stream_class = audio_stream_class
         self.eq_service = eq_service
-        self.selected_file = None
+        self.selected_file = "data/audio.wav"
         self.audio_thread_instance = None
         self.lock = threading.Lock()
         self.event = threading.Event()
@@ -30,26 +29,27 @@ class AudioPlayerModel(G2BaseModel):
         self.volume = 1
 
         self.eq_apply = False
-        self.notch_apply = False
 
-        self.gains = {
-            'Bass': 1,
-            'Mid-bass': 1,
-            'Midrange': 1,
-            'Upper midrange': 1,
-            'Treble': 1
-        }
+        # self.gains = {
+        #     'Bass': 1,
+        #     'Mid-bass': 1,
+        #     'Midrange': 1,
+        #     'Upper midrange': 1,
+        #     'Treble': 1
+        # }
 
         self.lowcut_freq = 0
         self.highcut_freq = 0
-        self.notch_low = 0
-        self.notch_high = 0
 
         self.show_graph = False
-        self.duration = 0  # Tổng thời lượng (giây)
-        self.elapsed_var = 0  # Thời gian đã phát (giây)
-        self.remain_var = 0  # Thời gian còn lại (giây)
-        self.progress_update_active = False  # Cờ kiểm soát việc cập nhật
+    
+    def set_eq_applied(self, eq_apply, gains, low_cut, high_cut):
+        self.eq_apply = eq_apply
+        self.gains = gains
+        self.lowcut_freq = low_cut
+        self.highcut_freq = high_cut
+        
+        self.eq_service.reset_eq()
 
     def set_state(self, state):
         """Cập nhật trạng thái của audio"""
@@ -59,20 +59,6 @@ class AudioPlayerModel(G2BaseModel):
         """Lấy trạng thái hiện tại"""
         return self.state
 
-    def _initialize_audio_info(self, wf):
-        """Khởi tạo thông tin về file audio"""
-        self.audio_info = {
-            'framerate': wf.getframerate(),
-            'nframes': wf.getnframes(),
-            'nchannels': wf.getnchannels(),
-            'sampwidth': wf.getsampwidth(),
-            'total_frames': wf.getnframes(),
-            'current_frame': 0,
-            'start_time': time.time(),
-            'pause_time': None,
-            'total_pause_duration': 0
-        }
-
     def play_audio(self):
         """Bắt đầu phát âm thanh từ file"""
         if not self.selected_file:
@@ -81,67 +67,16 @@ class AudioPlayerModel(G2BaseModel):
 
         wf = wave.open(self.selected_file, 'rb')
         print("framerate:", wf.getframerate())
-
-        # Tính toán tổng thời lượng (giây)
-        self.duration = wf.getnframes() / wf.getframerate()
-        self.elapsed_var = 0
-        self.remain_var = self.duration
-        
-        # Khởi tạo thông tin audio
-        self._initialize_audio_info(wf)
-
         self.audio_stream = self.audio_stream_class(channels=wf.getnchannels(), rate=wf.getframerate())
         self.set_state(AudioPlayerState.PLAYING)
         self.stopped_event.clear()  # Đảm bảo rằng event không bị set khi bắt đầu lại
         self._start_audio_thread(wf)
-        self._start_progress_update_thread()
-        
+
         thread_count = threading.active_count()
         print(f"Number of threads in the current process: {thread_count}")
-    
-    def _start_progress_update_thread(self):
-        """Tạo và khởi động thread cập nhật tiến trình"""
-        self.progress_update_active = True
-        
-        def update_progress():
-            while self.get_state() == AudioPlayerState.PLAYING and not self.stopped_event.is_set() and self.progress_update_active:
-                # Tính toán thời gian đã trôi qua, trừ đi thời gian tạm dừng
-                elapsed_time = time.time() - self.audio_info['start_time'] - self.audio_info['total_pause_duration']
-                
-                # Cập nhật frame hiện tại
-                self.audio_info['current_frame'] = min(
-                    int(elapsed_time * self.audio_info['framerate']), 
-                    self.audio_info['total_frames']
-                )
-                
-                # Cập nhật giá trị elapsed và remain
-                self.elapsed_var = elapsed_time
-                self.remain_var = max(0, self.duration - elapsed_time)
-                
-                # Tính toán phần trăm tiến độ (0-100)
-                progress_percentage = min(100, (self.audio_info['current_frame'] / self.audio_info['total_frames']) * 100)
-                
-                # Cập nhật UI trong luồng chính
-                if hasattr(self, 'update_ui_callback') and callable(self.update_ui_callback):
-                    self.update_ui_callback(progress_percentage)
-                
-                # Kiểm tra nếu đã kết thúc
-                if self.audio_info['current_frame'] >= self.audio_info['total_frames']:
-                    self.set_state(AudioPlayerState.STOPPED)
-                    self.stopped_event.set()
-                    if hasattr(self, 'update_ui_callback') and callable(self.update_ui_callback):
-                        self.update_ui_callback(100)
-                    break
-                
-                time.sleep(0.1)  # Cập nhật mỗi 100ms
-        
-        progress_thread = threading.Thread(target=update_progress)
-        progress_thread.daemon = True
-        progress_thread.start()
 
     def stop_audio(self):
         """Dừng âm thanh"""
-        self.progress_update_active = False
         self.set_state(AudioPlayerState.STOPPED)
         self.stopped_event.set()  # Set event để thông báo cho thread dừng
         if self.audio_thread_instance is not None:
@@ -149,70 +84,18 @@ class AudioPlayerModel(G2BaseModel):
 
     def pause_audio(self):
         """Tạm dừng âm thanh"""
-        if self.get_state() == AudioPlayerState.PLAYING:
-            self.set_state(AudioPlayerState.PAUSED)
-            if self.audio_thread_instance:
-                with self.lock:
-                    self.audio_stream.stop_stream()
-            self.event.clear()
-            
-            if hasattr(self, 'audio_info'):
-                self.audio_info['pause_time'] = time.time()
+        self.set_state(AudioPlayerState.PAUSED)
+        if self.audio_thread_instance:
+            with self.lock:  # Locking the stream to prevent race conditions
+                self.audio_stream.stop_stream()
+        self.event.clear()  # Đưa event về trạng thái "clear" (tạm dừng)
 
     def unpause_audio(self):
         """Tiếp tục phát âm thanh"""
-        if self.get_state() == AudioPlayerState.PAUSED:
-            self.set_state(AudioPlayerState.PLAYING)
-            with self.lock:
-                self.audio_stream.start_stream()
-            self.event.set()
-            
-            if hasattr(self, 'audio_info') and self.audio_info['pause_time'] is not None:
-                pause_duration = time.time() - self.audio_info['pause_time']
-                self.audio_info['total_pause_duration'] += pause_duration
-                self.audio_info['pause_time'] = None
-
-    def set_progress_callback(self, callback):
-        """Đặt callback để cập nhật UI từ thread khác"""
-        self.update_ui_callback = callback
-
-    # Thêm phương thức để di chuyển đến vị trí cụ thể
-    def seek_to_position(self, percentage):
-        """Di chuyển đến vị trí cụ thể trong file audio (0-100%)"""
-        if not hasattr(self, 'audio_info') or not self.audio_info:
-            return
-        
-        percentage = float(percentage)
-        if percentage < 0:
-            percentage = 0
-        elif percentage > 100:
-            percentage = 100
-        
-        # Tính toán vị trí mới (frame)
-        new_frame = int((percentage / 100) * self.audio_info['total_frames'])
-        
-        # Cập nhật thông tin
-        self.audio_info['current_frame'] = new_frame
-        
-        # Tính thời gian đã trôi qua mới
-        elapsed = (new_frame / self.audio_info['framerate'])
-        self.elapsed_var = elapsed
-        self.remain_var = max(0, self.duration - elapsed)
-        
-        # Điều chỉnh thời gian bắt đầu để đồng bộ với vị trí mới
-        current_time = time.time()
-        self.audio_info['start_time'] = current_time - elapsed + self.audio_info['total_pause_duration']
-        
-        # Nếu đang tạm dừng, cập nhật thời gian tạm dừng
-        if self.get_state() == AudioPlayerState.PAUSED:
-            self.audio_info['pause_time'] = current_time
-
-    # Thêm phương thức định dạng thời gian
-    def format_time(self, seconds):
-        """Format thời gian theo định dạng mm:ss"""
-        minutes = int(seconds) // 60
-        seconds = int(seconds) % 60
-        return f'{minutes:02}:{seconds:02}'
+        self.set_state(AudioPlayerState.PLAYING)
+        with self.lock:  # Locking the stream to prevent race conditions
+            self.audio_stream.start_stream()
+        self.event.set()  # Đưa event về trạng thái "set" (tiếp tục)
 
     def _start_audio_thread(self, wf):
         """Bắt đầu thread phát âm thanh"""
@@ -220,27 +103,28 @@ class AudioPlayerModel(G2BaseModel):
         self.audio_thread_instance.start()
 
     def _audio_thread(self, wf):
+
         if self.state == AudioPlayerState.PAUSED:
             self.event.wait()  # Dừng thread khi paused
 
         chunk = 1024
-        # Seek đến vị trí hiện tại nếu có
-        if hasattr(self, 'audio_info') and self.audio_info['current_frame'] > 0:
-            wf.setpos(self.audio_info['current_frame'])
-        
         data = wf.readframes(chunk)
 
+        # print(self.eq_apply, self.bands, self.lowcut_freq, self.highcut_freq)
+
         while data:
-            if self.get_state() != AudioPlayerState.PLAYING or self.stopped_event.is_set():
-                break
+            # Check if the audio is still in PLAYING state
+            if self.get_state() != AudioPlayerState.PLAYING:
+                break  # Exit the loop if audio is no longer playing
 
             audio_data = np.frombuffer(data, dtype=np.int16)
+            # filtered_data = audio_data
 
             # Áp dụng bộ lọc cho dữ liệu âm thanh
-            filtered_data = self.eq_service.equalize(audio_data, self.eq_apply, self.gains, self.lowcut_freq, self.highcut_freq, fs=44100)
+            filtered_data = self.eq_service.equalize(audio_data)
 
-            # Điều chỉnh âm lượng của dữ liệu âm thanh
-            filtered_data = np.clip(filtered_data * (self.volume / 100), -32768, 32767)
+            # Điều chỉnh âm lượng của dữ liệu âm thanh trước khi ghi vào stream
+            filtered_data = np.clip(filtered_data * self.volume, -32768, 32767)  # Áp dụng volume và giới hạn giá trị âm thanh
 
             if self.show_graph:
                 self.notify_queued("audio_chunk_changed", {
@@ -248,15 +132,26 @@ class AudioPlayerModel(G2BaseModel):
                     "filtered_data": filtered_data
                 })
 
-            with self.lock:
-                if self.get_state() != AudioPlayerState.PLAYING or self.stopped_event.is_set():
-                    break
+            # Check if the audio is still in PLAYING state
+            if self.get_state() != AudioPlayerState.PLAYING:
+                break  # Exit the loop if audio is no longer playing
+
+            with self.lock:  # Locking the stream to prevent race conditions while writing
+                # Check if the audio is still in PLAYING state
+                if self.get_state() != AudioPlayerState.PLAYING:
+                    break  # Exit the loop if audio is no longer playing
+
                 self.audio_stream.write(filtered_data.astype(np.int16).tobytes())
+
+            # Check if the audio is still in PLAYING state
+            if self.get_state() != AudioPlayerState.PLAYING:
+                break  # Exit the loop if audio is no longer playing
 
             data = wf.readframes(chunk)
 
+        # self.stop_audio()
         self.set_state(AudioPlayerState.STOPPED)
-        self.stopped_event.set()
+        self.stopped_event.set()  # Set event để thông báo cho thread dừng
         
         with self.lock:
             self.audio_stream.close()

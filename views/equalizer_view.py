@@ -1,84 +1,126 @@
-import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
-from views.equalizer_advance_view import EqualizerAdvanceView
+import tkinter as tk
+from viewmodels.equalizer_advanced_viewmodel import EqualizerViewModel2
+from tkinter import Toplevel
+from views.equalizer_view2 import EqualizerView2
 
+class EqualizerView:
+    def __init__(self, root, view_model: EqualizerViewModel2):
+        self.frame = tk.Frame(root)
+        self.frame.pack()
 
-class EqualizerView(ttk.Labelframe):
-    def __init__(self, master):
-        super().__init__(master, text="Equalizer", padding=5)
-        self.grid(row=1, column=0, sticky="nsew", padx=5, pady=5)
-        self.columnconfigure(list(range(6)), weight=1)
+        # Dòng đầu tiên
+        self.first_row_frame = tk.Frame(self.frame)
+        self.first_row_frame.pack()
 
-        self.create_header()
-        self.create_equalizer_bands()
-        self.create_additional_controls()
-        btn = ttk.Button(self, text="Advanced Settings", bootstyle=LINK, command=self.open_advance_view)
-        btn.grid(row=6, column=0, columnspan=6, pady=(15, 0))
+        self.turnon_frame = tk.Frame(self.first_row_frame, width=200)
+        self.turnon_frame.pack(side=tk.LEFT, padx=5, fill=tk.Y, expand=False)
+        self.turnon_frame.pack_propagate(0)
 
-    def create_header(self):
-        header_frame = ttk.Frame(self)
-        header_frame.grid(row=0, column=0, columnspan=6, sticky="ew", pady=(0, 10))
-        header_frame.columnconfigure(0, weight=1)
-        header_frame.columnconfigure(1, weight=0)
-
+        # Checkbutton để bật/tắt High Cut
+        self.eqapply_var = tk.IntVar()
+        self.eq_checkbox = tk.Checkbutton(self.turnon_frame, text="Enable Equalizer", variable=self.eqapply_var, command=self.update_equalizer)
+        self.eq_checkbox.pack()
         
-        self.eq_status = ttk.BooleanVar(value=True)
-        self.switch = ttk.Checkbutton(header_frame, variable=self.eq_status,
-                                      text="On", bootstyle="round-toggle")
-        self.switch.grid(row=0, column=1, sticky=E, padx=5)
+        # Checkbutton để bật/tắt Low Cut
+        self.lowcut_var = tk.IntVar()
+        self.lowcut_checkbox = tk.Checkbutton(self.turnon_frame, text="Enable Low Cut", variable=self.lowcut_var, command=self.update_equalizer)
+        self.lowcut_checkbox.pack()
+        
+        # Checkbutton để bật/tắt High Cut
+        self.highcut_var = tk.IntVar()
+        self.highcut_checkbox = tk.Checkbutton(self.turnon_frame, text="Enable High Cut", variable=self.highcut_var, command=self.update_equalizer)
+        self.highcut_checkbox.pack()
 
-    def create_equalizer_bands(self):
-        for col, band in enumerate(['Bass', 'Mid-bass', 'Midrange', 'Upper Mid', 'Treble']):
-            self.create_band(band, col)
+        self.more_button = tk.Button(self.turnon_frame, text="Advance Settings", width=13, command=self.open_more)
+        self.more_button.pack()
+        
 
-    def create_band(self, text, col):
-        min_gain = -12
-        max_gain = 12
-        value = 0
-        var = ttk.StringVar(value=f"{value} dB")
 
-        ttk.Label(self, text=text, anchor=CENTER).grid(row=1, column=col, pady=(5, 0))
-        band_frame = ttk.Frame(self)
-        band_frame.grid(row=2, column=col, padx=10)
-        ttk.Label(band_frame, textvariable=var, width=6, anchor=CENTER).pack(side=TOP, pady=(0, 5))
-        scale = ttk.Scale(
-            band_frame, orient=VERTICAL, from_=max_gain, to=min_gain, value=value,
-            command=lambda val, v=var: v.set(f"{int(float(val))} dB"),
-            bootstyle=INFO, length=140
+        # Thanh trượt equalizer bass
+        self.bass_frame = tk.Frame(self.first_row_frame, width=100)
+        self.bass_frame.pack(side=tk.LEFT, padx=5, fill=tk.Y, expand=False)
+        self.bass_frame.pack_propagate(0)
+        self.bass_slider = tk.Scale(self.bass_frame, from_=-24, to=24, resolution=1, orient="vertical", command=self.update_equalizer)
+        self.bass_slider.pack()
+        self.bass_slider.set(1)
+        self.bass_label = tk.Label(self.bass_frame, text="Bass")
+        self.bass_label.pack()
+
+        # Thanh trượt equalizer mid-bass
+        self.midbass_frame = tk.Frame(self.first_row_frame, width=100)
+        self.midbass_frame.pack(side=tk.LEFT, padx=5, fill=tk.Y, expand=False)
+        self.midbass_slider = tk.Scale(self.midbass_frame, from_=-24, to=24, resolution=0.1, orient="vertical", command=self.update_equalizer)
+        self.midbass_slider.pack()
+        self.midbass_slider.set(1)
+        self.midbass_label = tk.Label(self.midbass_frame, text="Mid-bass")
+        self.midbass_label.pack()
+        
+        # Thanh trượt equalizer mid
+        self.mid_frame = tk.Frame(self.first_row_frame, width=100)
+        self.mid_frame.pack(side=tk.LEFT, padx=5, fill=tk.Y, expand=False)
+        self.mid_slider = tk.Scale(self.mid_frame, from_=-24, to=24, resolution=0.1, orient="vertical", command=self.update_equalizer)
+        self.mid_slider.pack()
+        self.mid_slider.set(1)
+        self.mid_label = tk.Label(self.mid_frame, text="Midrange")
+        self.mid_label.pack()
+
+        # Thanh trượt equalizer upper mid
+        self.uppermid_frame = tk.Frame(self.first_row_frame, width=100)
+        self.uppermid_frame.pack(side=tk.LEFT, padx=5, fill=tk.Y, expand=False)
+        self.uppermid_slider = tk.Scale(self.uppermid_frame, from_=0, to=2, resolution=0.1, orient="vertical", command=self.update_equalizer)
+        self.uppermid_slider.pack()
+        self.uppermid_slider.set(1)
+        self.uppermid_label = tk.Label(self.uppermid_frame, text="Upper Mid")
+        self.uppermid_label.pack()
+        
+        # Thanh trượt equalizer treble
+        self.treble_frame = tk.Frame(self.first_row_frame, width=100)
+        self.treble_frame.pack(side=tk.LEFT, padx=5, fill=tk.Y, expand=False)
+        self.treble_slider = tk.Scale(self.treble_frame, from_=-24, to=24, resolution=0.1, orient="vertical", command=self.update_equalizer)
+        self.treble_slider.pack()
+        self.treble_slider.set(1)
+        self.treble_label = tk.Label(self.treble_frame, text="Treble")
+        self.treble_label.pack()
+
+        self.freqcut_frame = tk.Frame(self.first_row_frame, width=200)
+        self.freqcut_frame.pack(side=tk.LEFT, padx=5, fill=tk.Y, expand=False)
+        self.freqcut_frame.pack_propagate(0)
+
+        # Thanh trượt Low Cut
+        self.lowcut_slider = tk.Scale(self.freqcut_frame, from_=1, to=100, orient="horizontal", label="Low Cut (Hz)", command=self.update_equalizer)
+        self.lowcut_slider.pack()
+        self.lowcut_slider.set(20) 
+
+        # Thanh trượt High Cut
+        self.highcut_slider = tk.Scale(self.freqcut_frame, from_=5, to=20, resolution=1, orient="horizontal", label="High Cut (kHz)", command=self.update_equalizer)
+        self.highcut_slider.pack()
+        self.highcut_slider.set(15) 
+
+        self.view_model = view_model
+    
+    def pack(self, **kwargs):
+        self.frame.pack(**kwargs)
+
+    # self, eq_apply, bass_gain, midbass_gain, midrange_gain, uppermid_gain, treeble_gain, lowcut_applied, lowcut_freq, highcut_applied, highcut_freq
+    def update_equalizer(self, event=None):
+        self.view_model.update_equalizer_info (
+            self.eqapply_var.get(),
+            self.bass_slider.get(),
+            self.midbass_slider.get(),
+            self.mid_slider.get(),
+            self.uppermid_slider.get(),
+            self.treble_slider.get(),
+            self.lowcut_var.get(),
+            self.lowcut_slider.get(),
+            self.highcut_var.get(),
+            self.highcut_slider.get(),
+            
         )
-        scale.pack()
 
-    def create_additional_controls(self):
-        additional_frame = ttk.Frame(self)
-        additional_frame.grid(row=3, column=0, columnspan=6, sticky="ew", pady=(20, 10))
-        additional_frame.columnconfigure(list(range(6)), weight=1)
 
-        # Checkbox hàng 1
-        ttk.Checkbutton(additional_frame, text="Low Cut", variable=ttk.BooleanVar()).grid(row=0, column=0, padx=10, sticky=W)
-        ttk.Checkbutton(additional_frame, text="High Cut", variable=ttk.BooleanVar()).grid(row=0, column=1, padx=10, sticky=W)
-        ttk.Checkbutton(additional_frame, text="Notch Filter", variable=ttk.BooleanVar()).grid(row=0, column=2, padx=10, sticky=W)
-
-        # Slider Low Cut
-        ttk.Label(additional_frame, text="Low Cut (Hz)").grid(row=1, column=0, padx=5, sticky=E, pady=(10, 0))
-        self.low_cut_value = ttk.StringVar(value="20")
-        low_cut_slider = ttk.Scale(additional_frame, orient=HORIZONTAL, from_=20, to=200, length=150,
-                                   command=lambda val: self.low_cut_value.set(f"{int(float(val))}"))
-        low_cut_slider.grid(row=1, column=1, columnspan=2, sticky="ew", pady=(10, 0))
-        ttk.Label(additional_frame, textvariable=self.low_cut_value).grid(row=1, column=3, sticky=W, pady=(10, 0))
-
-        # Slider High Cut
-        ttk.Label(additional_frame, text="High Cut (kHz)").grid(row=2, column=0, padx=5, sticky=E, pady=(10, 0))
-        self.high_cut_value = ttk.StringVar(value="15")
-        high_cut_slider = ttk.Scale(additional_frame, orient=HORIZONTAL, from_=1, to=20, length=150,
-                                    command=lambda val: self.high_cut_value.set(f"{int(float(val))}"))
-        high_cut_slider.grid(row=2, column=1, columnspan=2, sticky="ew", pady=(10, 0))
-        ttk.Label(additional_frame, textvariable=self.high_cut_value).grid(row=2, column=3, sticky=W, pady=(10, 0))
-
-        # Radio
-        ttk.Label(additional_frame, text="Filter Type").grid(row=3, column=0, padx=5, sticky=E, pady=(10, 0))
-        self.filter_var = ttk.StringVar(value="FIR")
-        ttk.Radiobutton(additional_frame, text="FIR", variable=self.filter_var, value="FIR").grid(row=3, column=1, sticky=W, pady=(10, 0))
-        ttk.Radiobutton(additional_frame, text="IIR", variable=self.filter_var, value="IIR").grid(row=3, column=2, sticky=W, pady=(10, 0))
-
-    def open_advance_view(self):
-        EqualizerAdvanceView(self)
+    def open_more(self):
+        # Tạo cửa sổ con mới
+        new_window = Toplevel(self.frame)  # 'root' là cửa sổ chính
+        new_window.title("EQ Setting")
+        
+        equalizer_view2 = EqualizerView2(new_window, self.view_model)
