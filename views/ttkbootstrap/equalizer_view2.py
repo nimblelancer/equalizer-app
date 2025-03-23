@@ -1,6 +1,6 @@
 import tkinter as tk
 from viewmodels.equalizer_advanced_viewmodel import EqualizerViewModel2
-from views.filter_freq_response_graphview import FilterFreqResponseGraphView
+from views.ttkbootstrap.filter_freq_response_graphview import FilterFreqResponseGraphView
 
 class EqualizerView2:
     def __init__(self, root, view_model: EqualizerViewModel2):

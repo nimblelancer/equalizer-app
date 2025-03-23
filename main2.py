@@ -1,6 +1,6 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
-from views2.main_view import Mainview
+from views.ttkbootstrap.main_view import Mainview
 
 if __name__ == "__main__":
     # Khởi tạo ttkbootstrap root và Model, View, ViewModel

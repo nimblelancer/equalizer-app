@@ -2,7 +2,7 @@ import ttkbootstrap as ttk
 import matplotlib.pyplot as plt
 import numpy as np
 import time
-from views.audio_spectrum_graphview import AudioSpectrumGraphView
+from views.ttkbootstrap.audio_spectrum_graphview import AudioSpectrumGraphView
 
 class AudioGraphView2:
     def __init__(self, root, view_model):

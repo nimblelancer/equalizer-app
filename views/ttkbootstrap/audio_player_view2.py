@@ -6,7 +6,7 @@ from viewmodels.audio_player_viewmodel import AudioPlayerViewModel
 from viewmodels.audio_graph_viewmodel import AudioGraphViewModel
 from tkinter import Toplevel
 
-class AudioPlayerView(ttk.Frame):
+class AudioPlayerView2(ttk.Frame):
     def __init__(self, root, view_model: AudioPlayerViewModel):
         super().__init__(root)
         self.view_model = view_model

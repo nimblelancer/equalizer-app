@@ -1,4 +1,4 @@
-from audio_player_model import AudioPlayerModel
+from models.audio_player_model import AudioPlayerModel
 import numpy as np
 from scipy import signal
 import matplotlib.pyplot as plt

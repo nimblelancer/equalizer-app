@@ -2,7 +2,7 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from viewmodels.equalizer_advanced_viewmodel import EqualizerViewModel2
 from tkinter import Toplevel
-from views.equalizer_view2 import EqualizerView2
+from views.ttkbootstrap.equalizer_view2 import EqualizerView2
 
 class EqualizerView(ttk.Frame):
     def __init__(self, root, view_model):
