@@ -7,6 +7,7 @@ import numpy as np
 
 class AudioGraphView:
     def __init__(self, root, view_model: AudioGraphViewModel):
+        print('view 1')
         
         self.frame = tk.Frame(root)
         self.frame.pack()
