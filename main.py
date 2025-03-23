@@ -1,4 +1,5 @@
-import tkinter as tk
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
 
 # from audio_service import AudioService
 from core.player.equalizer_service2 import EqualizerService2
@@ -13,14 +14,12 @@ from viewmodels.audio_graph_viewmodel import AudioGraphViewModel
 from models.equalizer_model import EqualizerModel
 
 if __name__ == "__main__":
-    # Khởi tạo tkinter root và Model, View, ViewModel
-    root = tk.Tk()
-    
+    # Khởi tạo ttkbootstrap root và Model, View, ViewModel
+    root = ttk.Window(themename="darkly")  # Chọn theme phù hợp
+
     # Khởi tạo các thành phần
-    
     equalizer_svc = EqualizerService2()
     equalizer_model = EqualizerModel(equalizer_svc)
-    # audio_svc = AudioService(equalizer_svc)
     audio_model = AudioPlayerModel(PyAudioStreamWrapper, equalizer_svc)
     player_viewmodel = AudioPlayerViewModel(audio_model)
     player_view = AudioPlayerView(root, player_viewmodel)
@@ -32,9 +31,6 @@ if __name__ == "__main__":
     # audio_graph_viewmodel = AudioGraphViewModel(audio_model)
     # audio_graph_view = AudioGraphView2(root, audio_graph_viewmodel)
     # audio_graph_view.pack(pady=20)
-
-    
-    
 
     # Bắt đầu vòng lặp giao diện người dùng
     root.mainloop()
