@@ -5,10 +5,10 @@ from views.audio_graph_view2 import AudioGraphView2
 from viewmodels.audio_graph_viewmodel import AudioGraphViewModel
 from tkinter import Toplevel
 
-class AudioPlayerView:
+class AudioPlayerView2:
     def __init__(self, root, view_model: AudioPlayerViewModel):
-        self.root = root
-        self.root.title("Audio Player")
+        self.frame = tk.Frame(root)
+        self.frame.pack()
         
         # Tạo một frame chứa các button
         self.button_frame = tk.Frame(root)
@@ -37,27 +37,18 @@ class AudioPlayerView:
         self.vol_slider.pack(side=tk.LEFT, padx=5)
         self.vol_slider.set(1)
 
-        self.voice_button = tk.Button(self.button_frame, text="Graph", width=10, command=self.show_graph)
-        self.voice_button.pack(side=tk.LEFT, padx=5)
-
         self.selected_file = ""  # Biến lưu trữ đường dẫn tệp được chọn
         self.view_model = view_model
         
         self.view_model.add_view_listener(self)
 
+    def pack(self, **kwargs):
+        self.frame.pack(**kwargs)
+
     def select_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.mp3 *.wav *.ogg")])
         if file_path:
-            self.view_model.set_file_audio(file_path)
-
-    def show_graph(self):
-        # Tạo cửa sổ con mới
-        new_window = Toplevel(self.root)  # 'root' là cửa sổ chính
-        new_window.title("Graph views")
-
-        graph_viewmodel = AudioGraphViewModel(self.view_model.model)
-        
-        graph_view = AudioGraphView2(new_window, graph_viewmodel)
+            self.view_model.select_file(file_path)
 
     def setting_volume(self, event=None):
         self.view_model.setting_volume(self.vol_slider.get())

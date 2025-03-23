@@ -8,7 +8,6 @@ class AudioPlayerView(ttk.Labelframe):
     def __init__(self, master, view_model):
         super().__init__(master, text="Audio Player", padding=5)
         self.view_model = view_model
-        self.view_model.set_view(self)
         self.pack(fill=BOTH, expand=YES)
         self.create_media_window()
         self.create_progress_meter()
@@ -33,13 +32,12 @@ class AudioPlayerView(ttk.Labelframe):
         
         self.scale = ttk.Scale(
             master=container, 
-            command=self.view_model.on_progress, 
+            command=None, 
             from_=0,
             to=100,
             value=0
         )
         self.scale.pack(side=LEFT, fill=X, expand=YES)
-        self.scale.bind("<ButtonRelease-1>", self.view_model.on_progress_release)
         self.remain_label = ttk.Label(container, text='00:00')
         self.remain_label.pack(side=LEFT, padx=5)
     

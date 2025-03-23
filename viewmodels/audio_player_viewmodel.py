@@ -39,11 +39,9 @@ class AudioPlayerViewModel (G2BaseViewModel):
         self.model.unpause_audio()
         # self.set_property("is_playing", True)
 
-    def select_file(self, file_path):
+    def set_file_audio(self, file_path):
         """Khi nút Select File được nhấn"""
-        # self.selected_file = file_path
-        self.model.set_audio_file(file_path)
-        # self.set_property("selected_file", file_path)
+        self.model.selected_file = file_path
 
     def voice(self):
         """Khi nút Voice được nhấn"""
