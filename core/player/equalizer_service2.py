@@ -12,7 +12,7 @@ class EqualizerService2:
         self.filter_chain = FilterChain()
         self.filter_provider = FilterProvider()
 
-    def reset_audio(self, fs, dim):
+    def reset_audio(self, fs):
         self.fs = fs
         # self.audio_dim = dim
 

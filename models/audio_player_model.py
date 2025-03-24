@@ -6,6 +6,12 @@ import wave
 from core.player.equalizer_service2 import EqualizerService2
 from typing import Type
 
+AUDIO_FS = 44100
+AUDIO_CHUNK = 1024
+VOICE_FS = 44100
+VOICE_FPB = 1024
+VOICE_CHUNK = 1024
+
 class AudioPlayerState:
     STOPPED = 0
     PLAYING = 1
@@ -27,33 +33,16 @@ class AudioPlayerModel(G2BaseModel):
         self.stopped_event = threading.Event()  # Event để dừng thread
 
         self.volume = 1
-
-        self.eq_apply = False
-
-        # self.gains = {
-        #     'Bass': 1,
-        #     'Mid-bass': 1,
-        #     'Midrange': 1,
-        #     'Upper midrange': 1,
-        #     'Treble': 1
-        # }
-
-        self.lowcut_freq = 0
-        self.highcut_freq = 0
+        self.fs = AUDIO_FS
 
         self.show_graph = False
     
-    def set_eq_applied(self, eq_apply, gains, low_cut, high_cut):
-        self.eq_apply = eq_apply
-        self.gains = gains
-        self.lowcut_freq = low_cut
-        self.highcut_freq = high_cut
-        
-        self.eq_service.reset_eq()
-
     def set_state(self, state):
         """Cập nhật trạng thái của audio"""
         self.state = state
+        self.notify_queued("player_state_changed", {
+                    "state": self.state
+                })
 
     def get_state(self):
         """Lấy trạng thái hiện tại"""
@@ -66,8 +55,14 @@ class AudioPlayerModel(G2BaseModel):
             return
 
         wf = wave.open(self.selected_file, 'rb')
-        print("framerate:", wf.getframerate())
-        self.audio_stream = self.audio_stream_class(channels=wf.getnchannels(), rate=wf.getframerate())
+        self.fs = wf.getframerate()
+        self.eq_service.reset_audio(fs=self.fs)
+
+        self.notify_queued("audio_stream_changed", {
+                    "framerate": self.fs
+                })
+        
+        self.audio_stream = self.audio_stream_class(channels=wf.getnchannels(), rate=self.fs)
         self.set_state(AudioPlayerState.PLAYING)
         self.stopped_event.clear()  # Đảm bảo rằng event không bị set khi bắt đầu lại
         self._start_audio_thread(wf)
@@ -107,8 +102,7 @@ class AudioPlayerModel(G2BaseModel):
         if self.state == AudioPlayerState.PAUSED:
             self.event.wait()  # Dừng thread khi paused
 
-        chunk = 1024
-        data = wf.readframes(chunk)
+        data = wf.readframes(AUDIO_CHUNK)
 
         # print(self.eq_apply, self.bands, self.lowcut_freq, self.highcut_freq)
 
@@ -147,7 +141,7 @@ class AudioPlayerModel(G2BaseModel):
             if self.get_state() != AudioPlayerState.PLAYING:
                 break  # Exit the loop if audio is no longer playing
 
-            data = wf.readframes(chunk)
+            data = wf.readframes(AUDIO_CHUNK)
 
         # self.stop_audio()
         self.set_state(AudioPlayerState.STOPPED)
@@ -160,9 +154,13 @@ class AudioPlayerModel(G2BaseModel):
         """Bắt đầu ghi âm từ microphone"""
         self.set_state(AudioPlayerState.RECORDING)
         self.audio_stream = self.audio_stream_class(channels=1,
-                                                 rate=44100,
+                                                 rate=VOICE_FS,
                                                  input=True,
-                                                 frames_per_buffer=1024)
+                                                 frames_per_buffer=VOICE_FPB)
+        
+        self.fs = VOICE_FS
+        
+        self.eq_service.reset_audio(fs=self.fs)
 
         self._start_micro_thread()
 
@@ -175,14 +173,15 @@ class AudioPlayerModel(G2BaseModel):
         """Ghi âm từ micro và phát lại"""
         audio_data_buffer = []
         while self.get_state() == AudioPlayerState.RECORDING:
-            data = self.audio_stream.read(1024)
+            data = self.audio_stream.read(VOICE_CHUNK)
             audio_data = np.frombuffer(data, dtype=np.int16)
 
             # Áp dụng EQ filter nếu cần
-            filtered_data = self.eq_service.equalize(audio_data, self.eq_apply, self.gains,
-                                                     self.lowcut_freq, self.highcut_freq, fs=44100)
+            # filtered_data = self.eq_service.equalize(audio_data, self.eq_apply, self.gains,
+            #                                          self.lowcut_freq, self.highcut_freq, fs=44100)
 
-            filtered_data = np.clip(filtered_data * self.volume, -32768, 32767)
+            # filtered_data = np.clip(filtered_data * self.volume, -32768, 32767)
+            filtered_data = np.clip(audio_data * self.volume, -32768, 32767)
 
             if self.show_graph:
                 self.notify_queued("audio_chunk_changed", {

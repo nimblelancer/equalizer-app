@@ -6,9 +6,13 @@ class AudioPlayerViewModel (G2BaseViewModel):
     def __init__(self, model: AudioPlayerModel):
 
         super().__init__(model)
-        self.model.add_listener("player_changed", self)
+        self.model.add_listener("player_state_changed", self)
+        self.model.add_listener("audio_stream_changed", self)
 
-        # self.model = model
+        # Trạng thái của View
+        self.is_playing = False
+        self.selected_file = ""
+        self.volume = 1.0
 
         self.play_command = G2Command(self.play_audio)
         self.stop_command = G2Command(self.stop_audio)
@@ -20,28 +24,27 @@ class AudioPlayerViewModel (G2BaseViewModel):
         """Khi nút Play được nhấn"""
         if self.model.selected_file:
             self.model.play_audio()
-            # self.is_playing = True
-            # self.is_paused = False
-            # self.set_property("is_playing", True)
+            self.is_playing = True
 
     def stop_audio(self):
         """Khi nút Stop được nhấn"""
         self.model.stop_audio()
-        # self.set_property("is_playing", False)
+        self.is_playing = False
 
     def pause_audio(self):
         """Khi nút Pause được nhấn"""
         self.model.pause_audio()
-        # self.set_property("is_playing", False)
+        self.is_playing = False
 
     def unpause_audio(self):
         """Khi nút Unpause được nhấn"""
         self.model.unpause_audio()
-        # self.set_property("is_playing", True)
+        self.is_playing = True
 
-    def set_file_audio(self, file_path):
+    def select_file(self, file_path):
         """Khi nút Select File được nhấn"""
-        self.model.selected_file = file_path
+        self.model.set_audio_file(file_path)
+        self.selected_file = file_path
 
     def voice(self):
         """Khi nút Voice được nhấn"""
@@ -51,3 +54,12 @@ class AudioPlayerViewModel (G2BaseViewModel):
     def setting_volume(self, value):
         """Khi nút Voice được nhấn"""
         self.model.volume = value
+
+    def on_notify(self, event_name, data):
+        if event_name == "player_state_changed":
+            # Xử lý dữ liệu từ Model (tùy theo logic của bạn)
+            """"""
+        elif event_name == "audio_stream_changed":
+            """"""
+        else:
+            super().notify_view(event_name, data)  # Gọi hàm super
