@@ -15,7 +15,7 @@ class AudioSpectrumGraphView:
         self.framerate = framerate
         self.buffer_size = buffer_size
 
-    def show_graph(self):
+    # def show_graph(self):
         # Tạo đồ thị nếu chưa tạo
         if self.canvas is None:
             fig, axs = plt.subplots(2, 1, figsize=(10, 9))

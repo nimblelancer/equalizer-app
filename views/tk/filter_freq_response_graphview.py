@@ -1,20 +1,18 @@
+import tkinter as tk
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import numpy as np
 
 class FilterFreqResponseGraphView:
-    def __init__(self, parent, view_model):
+    def __init__(self, parent):
         self.fig, self.ax = plt.subplots(figsize=(10, 6))
         self.canvas = FigureCanvasTkAgg(self.fig, master=parent)  # Tạo canvas cho đồ thị
         self.canvas.draw()
         self.canvas.get_tk_widget().pack()
+        # self.setup_axs(f, hs)
 
-        self.view_model = view_model
-        self.setup_axs()
-
-    def setup_axs(self):
+    def setup_axs(self, f, hs):
         self.ax.clear()
-        f, hs = self.view_model.get_frequency_response()
         for h in hs:
             self.ax.semilogx(f, 20 * np.log10(abs(h)))
 
@@ -30,7 +28,7 @@ class FilterFreqResponseGraphView:
         self.ax.set_xticks(xticks)
         self.ax.set_xticklabels(['20', '50', '100', '200', '500', '1k', '2k', '5k', '10k', '20k'])
 
-    def update_graph(self):
+    def update_graph(self, f, hs):
         """Cập nhật đồ thị khi có sự thay đổi trong dữ liệu của view model"""
-        self.setup_axs()
+        self.setup_axs(f, hs)
         self.canvas.draw()

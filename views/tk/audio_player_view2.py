@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import filedialog
 from viewmodels.audio_player_viewmodel import AudioPlayerViewModel
-from views.audio_graph_view2 import AudioGraphView2
+from views.tk.audio_graph_view2 import AudioGraphView2
 from viewmodels.audio_graph_viewmodel import AudioGraphViewModel
 from tkinter import Toplevel
 
@@ -56,13 +56,3 @@ class AudioPlayerView2:
     def update_view(self, event_name, data):
         """Phương thức sẽ được gọi khi ViewModel thay đổi"""
         print("AudioPlayerView update_view:", event_name, data)
-        # is_playing = self.view_model.get_property("is_playing")
-        # selected_file = self.view_model.get_property("selected_file")
-
-        # # Cập nhật giao diện người dùng khi trạng thái thay đổi
-        # if is_playing:
-        #     print("Audio is playing")
-        # else:
-        #     print("Audio is stopped or paused")
-
-        # print(f"Selected file: {selected_file}")
