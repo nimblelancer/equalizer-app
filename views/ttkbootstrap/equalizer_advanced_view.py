@@ -24,6 +24,14 @@ class EqualizerAdvancedView:
             self.create_band_controls(band_name, params)
 
         self.view_model.add_view_listener(self)
+        root.protocol("WM_DELETE_WINDOW", self.on_close)
+
+    def on_close(self):
+        """Hàm này sẽ được gọi khi cửa sổ bị đóng"""
+        print("Closing Setting...")
+
+        self.graph_view.on_close()
+        self.view_model.on_close()
 
     def create_band_controls(self, band_name, params, from_=20, to_=20000):
         band_frame = tk.Frame(self.first_row_frame)

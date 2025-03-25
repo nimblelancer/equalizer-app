@@ -56,6 +56,11 @@ class AudioPlayerView(ttk.Frame):
         self.vol_slider.set(1)
 
         self.view_model.add_view_listener(self)
+
+    def on_close(self):
+        self.frame.quit()  # Dừng Tkinter loop
+        self.frame.destroy()  # Giải phóng bộ nhớ
+        self.view_model.on_close()
     
     def select_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.mp3 *.wav *.ogg")])

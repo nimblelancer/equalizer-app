@@ -88,6 +88,11 @@ class EqualizerBasicView:
         self.highcut_slider.set(self.view_model.highcut_freq) 
 
         self.view_model.add_view_listener(self)
+
+    def on_close(self):
+        print("Closing basic equalizer...")
+        self.view_model.on_close()
+        
     def grid(self, **kwargs):
         self.frame.grid(**kwargs)
 

@@ -4,7 +4,7 @@ from tkinter import Toplevel
 from di_container import DiContainer
 from views.ttkbootstrap.audio_player_view import AudioPlayerView
 from views.ttkbootstrap.equalizer_basic_view import EqualizerBasicView
-
+import threading
 from views.ttkbootstrap.audio_graph_view import AudioGraphView
 from views.ttkbootstrap.equalizer_advanced_view import EqualizerAdvancedView
 # from views.tkinter.subview2 import SubView2
@@ -27,6 +27,19 @@ class Mainview:
 
         self.button2 = ttk.Button(root, text="Show Graph", command=self.show_graph)
         self.button2.grid(row=3, column=0, columnspan=2, pady=5, sticky=W)
+        root.protocol("WM_DELETE_WINDOW", self.on_close)
+        
+    def on_close(self):
+        print("Closing application...")
+        print(f"Number of threads currently active: {threading.active_count()}")
+        self.audio_player_view.on_close()
+        self.basic_equalizer_view.on_close()
+        
+        # Hủy bỏ vòng lặp chính sau 1 ms
+        self.root.after(1, self.root.quit)
+        self.root.after(1, self.root.destroy)
+
+        print(f"Number of threads remaining: {threading.active_count()}")
 
     def show_graph(self):
         audio_graph_window = Toplevel(self.root)

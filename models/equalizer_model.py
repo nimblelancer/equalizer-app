@@ -2,12 +2,14 @@ from models.base_model import G2BaseModel
 import numpy as np
 from core.player.equalizer_service2 import EqualizerService2
 import json
+from config_manager import ConfigManager
 
 class EqualizerModel(G2BaseModel):
-    def __init__(self, eq_service: EqualizerService2, fs=44100):
+    def __init__(self, eq_service: EqualizerService2, config_manager: ConfigManager, fs=44100):
         super().__init__()
 
         self.eq_service = eq_service
+        self.config_manager = config_manager
         self.fs = fs
         self.eq_apply = False
         # self.gains = {}

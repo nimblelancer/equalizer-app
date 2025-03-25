@@ -6,6 +6,7 @@ class G2BaseModel:
         self.listeners = {}  # Lưu trữ listeners cho mỗi sự kiện riêng biệt
 
         self.event_queue = queue.Queue()
+        self.stop_thread_event = threading.Event()
         self.notify_thread = threading.Thread(target=self._process_notifications)
         self.notify_thread.start()
 
@@ -33,6 +34,15 @@ class G2BaseModel:
 
     def _process_notifications(self):
         """Dành riêng cho việc xử lý các thông báo trong một thread khác"""
-        while True:
-            event_name, data = self.event_queue.get()
-            self.notify(event_name, data)
+        while not self.stop_thread_event.is_set():  # Kiểm tra sự kiện dừng thread
+            try:
+                event_name, data = self.event_queue.get(timeout=1)  # Thêm timeout để tránh block lâu
+                self.notify(event_name, data)
+            except queue.Empty:
+                continue
+
+    def on_close(self):
+        """Phương thức này dừng thread một cách an toàn"""
+        self.stop_thread_event.set()  # Đặt sự kiện dừng thread
+        self.notify_thread.join()  # Đảm bảo thread đã dừng
+        print("thread on model closed")

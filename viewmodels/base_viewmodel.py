@@ -1,5 +1,3 @@
-import asyncio
-
 class G2BaseViewModel:
     def __init__(self, model):
         self.model = model
@@ -27,3 +25,6 @@ class G2BaseViewModel:
         """Nhận cập nhật từ Model và xử lý nếu cần"""
         # Xử lý dữ liệu từ Model (tùy theo logic của bạn)
         self.notify_view(event_name, data)  # Thông báo dữ liệu đã cập nhật cho View
+
+    def on_close(self):
+        self.model.on_close()

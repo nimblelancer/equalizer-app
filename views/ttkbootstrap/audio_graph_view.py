@@ -60,6 +60,17 @@ class AudioGraphView:
         self.graph_filtered_fft = None
 
         self.create_graphs(self.frame)
+        root.protocol("WM_DELETE_WINDOW", self.on_close)
+
+    def on_close(self):
+        """Hàm này sẽ được gọi khi cửa sổ bị đóng"""
+        print("Closing Graph...")
+
+        # Bạn có thể làm bất kỳ công việc cần thiết ở đây, ví dụ như đóng các đối tượng đồ thị, giải phóng bộ nhớ, lưu trạng thái, v.v.
+        # Thực hiện dọn dẹp, hủy bỏ hoặc đóng các đồ thị nếu cần
+        for fig, _ in self.figures:
+            plt.close(fig)  # Đảm bảo rằng các figure được đóng khi ứng dụng kết thúc
+        self.view_model.on_close()
 
     def create_graphs(self, frame):
         # Tạo Canvas để chứa các đồ thị

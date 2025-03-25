@@ -17,7 +17,7 @@ class AudioGraphViewModel(G2BaseViewModel):
         self.filtered_data = None
 
         # Khởi tạo các biến cần thiết
-        self.buffer_size = 1024 * 3
+        self.buffer_size = self.model.config_manager.getint('general', 'graph_bufer_size')
         self.audio_data_buffer = []  # Dữ liệu âm thanh tích lũy
         self.filtered_data_buffer = []  # Dữ liệu âm thanh tích lũy
         self.index = 0  # Chỉ số theo dõi vị trí trong âm thanh
@@ -64,14 +64,14 @@ class AudioGraphViewModel(G2BaseViewModel):
 
     #     return self.original_audio_data, self.filtered_audio_data
     
-    def adjust_data_size(self, audio_data):
-        """Điều chỉnh kích thước dữ liệu âm thanh sao cho đồng nhất"""
-        target_size = 1024
-        if len(audio_data) < target_size:
-            audio_data = np.pad(audio_data, (0, target_size - len(audio_data)), 'constant', constant_values=0)
-        elif len(audio_data) > target_size:
-            audio_data = audio_data[:target_size]
-        return audio_data
+    # def adjust_data_size(self, audio_data):
+    #     """Điều chỉnh kích thước dữ liệu âm thanh sao cho đồng nhất"""
+    #     target_size = 1024
+    #     if len(audio_data) < target_size:
+    #         audio_data = np.pad(audio_data, (0, target_size - len(audio_data)), 'constant', constant_values=0)
+    #     elif len(audio_data) > target_size:
+    #         audio_data = audio_data[:target_size]
+    #     return audio_data
     
     def normalize_audio_data(self, audio_data):
         """Chuẩn hóa dữ liệu âm thanh vào phạm vi [-1, 1]"""
@@ -147,11 +147,18 @@ class AudioGraphViewModel(G2BaseViewModel):
     def on_notify(self, event_name, data):
         if event_name == "audio_chunk_changed":
             # print("audio_chunk_changed in audio_graph_viewmodel")
+            audio_data_ = data.get("audio_data")
+            filtered_data_ = data.get("filtered_data")
+            if len(audio_data_.shape) > 1:
+                audio_data_ = audio_data_[:, 0]
 
-            audio_data = self.adjust_data_size(data.get("audio_data"))
-            audio_data_normalized = self.normalize_audio_data(audio_data)
-            filtered_data = self.adjust_data_size(data.get("filtered_data"))
-            filtered_data_normalized = self.normalize_audio_data(filtered_data)
+            if len(filtered_data_.shape) > 1:
+                filtered_data_ = filtered_data_[:, 0]
+
+            # audio_data = self.adjust_data_size(data.get("audio_data"))
+            audio_data_normalized = self.normalize_audio_data(audio_data_)
+            # filtered_data = self.adjust_data_size(data.get("filtered_data"))
+            filtered_data_normalized = self.normalize_audio_data(filtered_data_)
 
             # Thêm dữ liệu vào buffer
             self.audio_data_buffer.extend(audio_data_normalized)

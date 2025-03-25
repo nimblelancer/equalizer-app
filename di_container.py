@@ -7,14 +7,17 @@ from viewmodels.equalizer_advanced_viewmodel import EqualizerAdvancedViewModel
 from viewmodels.audio_graph_viewmodel import AudioGraphViewModel
 from core.player.equalizer_service2 import EqualizerService2
 from core.player.pyaudio_audio_stream import PyAudioStreamWrapper
+from config_manager import ConfigManager
 
 class DiContainer(containers.DeclarativeContainer):
+    # Khởi tạo config manager
+    config_manager = providers.Singleton(ConfigManager, config_file="config.ini")
     # Khởi tạo core
     equalizer_svc = providers.Singleton(EqualizerService2)
 
     # Khởi tạo model
-    audio_player_model = providers.Singleton(AudioPlayerModel, audio_stream_class=PyAudioStreamWrapper, eq_service=equalizer_svc)
-    equalizer_model = providers.Singleton(EqualizerModel, eq_service=equalizer_svc)
+    audio_player_model = providers.Singleton(AudioPlayerModel, audio_stream_class=PyAudioStreamWrapper, eq_service=equalizer_svc, config_manager=config_manager)
+    equalizer_model = providers.Singleton(EqualizerModel, eq_service=equalizer_svc, config_manager=config_manager)
     
     # Khởi tạo viewmodel
     audio_player_viewmodel = providers.Factory(AudioPlayerViewModel, model=audio_player_model)

@@ -32,3 +32,7 @@ class FilterFreqResponseGraphView:
         """Cập nhật đồ thị khi có sự thay đổi trong dữ liệu của view model"""
         self.setup_axs(f, hs)
         self.canvas.draw()
+
+    def on_close(self):
+        for fig, _ in self.figures:
+            plt.close(fig)  # Đảm bảo rằng các figure được đóng khi ứng dụng kết thúc
