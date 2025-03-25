@@ -22,7 +22,7 @@ class AudioPlayerView(ttk.Frame):
         # Thêm thanh trượt tiến trình bài hát
         self.progress_var = ttk.DoubleVar()
         self.progress_slider = ttk.Scale(
-            self, from_=0, to=100, orient="horizontal", variable=self.progress_var, style="info.TScale", command=self.seek_audio
+            self, from_=0, to=100, orient="horizontal", variable=self.progress_var, style="primary.TScale", command=self.seek_audio
         )
         self.progress_slider.grid(row=1, column=0, columnspan=3, pady=5, sticky="ew")  # Đặt thanh giữa phổ và nút
 
@@ -40,7 +40,7 @@ class AudioPlayerView(ttk.Frame):
         self.vol_label.grid(row=0, column=0, padx=5)
 
         # Thanh trượt âm lượng
-        self.vol_slider = ttk.Scale(self.vol_frame, from_=0, to=5, orient="horizontal", style="info.TScale", command=self.setting_volume)
+        self.vol_slider = ttk.Scale(self.vol_frame, from_=0, to=5, orient="horizontal", style="primary.TScale", command=self.setting_volume)
         self.vol_slider.grid(row=0, column=1, padx=5)
         self.vol_slider.set(1)
 
@@ -67,7 +67,7 @@ class AudioPlayerView(ttk.Frame):
         self.unpause_button.grid(row=0, column=3, padx=5)
 
         # Nút chọn file (Đặt sau cùng)
-        self.select_file_button = ttk.Button(self, text="Open", command=self.select_file, bootstyle="outline-info")
+        self.select_file_button = ttk.Button(self, text="Open", command=self.select_file, bootstyle="outline-primary")
         self.select_file_button.grid(row=2, column=2, padx=10, sticky="w")
 
 
@@ -83,7 +83,7 @@ class AudioPlayerView(ttk.Frame):
         for i in range(15):
             x = 20 + i * 35
             height = random.randint(20, 100)
-            bar = self.canvas.create_rectangle(x, 150 - height, x + 15, 150, fill="#00D8FF", outline="")
+            bar = self.canvas.create_rectangle(x, 150 - height, x + 15, 150, fill="#4581ec", outline="")
             self.bars.append(bar)
 
     def update_random_spectrogram(self):
