@@ -1,77 +1,113 @@
 import ttkbootstrap as ttk
+import random
 from ttkbootstrap.constants import *
 from tkinter import filedialog, PhotoImage
 from viewmodels.audio_player_viewmodel import AudioPlayerViewModel
-# from views.audio_graph_view2 import AudioGraphView2
-from viewmodels.audio_graph_viewmodel import AudioGraphViewModel
-from tkinter import Toplevel
+from PIL import Image, ImageTk
 
 class AudioPlayerView(ttk.Frame):
     def __init__(self, root, view_model: AudioPlayerViewModel):
         super().__init__(root)
+        self.root = root
         self.view_model = view_model
-        self.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        self.grid(row=0, column=1, sticky="nsew", padx=10, pady=5)
 
-        # Ảnh nền nốt nhạc
-        self.note_image = PhotoImage(file="assets/mp_background.png").subsample(2,2)
-        self.image_label = ttk.Label(self, image=self.note_image)
-        self.image_label.pack(pady=5)
+        # Canvas random spectrogram
+        self.canvas = ttk.Canvas(self, width=550, height=150, bg="#121212", highlightthickness=0)
+        self.canvas.grid(row=0, column=0, columnspan=3, pady=10)
+        self.bars = []
+        self.draw_random_spectrogram()
+        self.update_random_spectrogram()
 
-        # Frame chứa nút điều khiển
-        self.button_frame = ttk.Frame(self)
-        self.button_frame.pack(pady=10)
+        # Thêm thanh trượt tiến trình bài hát
+        self.progress_var = ttk.DoubleVar()
+        self.progress_slider = ttk.Scale(
+            self, from_=0, to=100, orient="horizontal", variable=self.progress_var, style="info.TScale", command=self.seek_audio
+        )
+        self.progress_slider.grid(row=1, column=0, columnspan=3, pady=5, sticky="ew")  # Đặt thanh giữa phổ và nút
 
-        # Load icon với kích thước nhỏ hơn
-        self.play_icon = PhotoImage(file="assets/play.png").subsample(13,13)
-        self.stop_icon = PhotoImage(file="assets/stop.png").subsample(13,13)
-        self.pause_icon = PhotoImage(file="assets/pause.png").subsample(13,13)
-        self.resume_icon = PhotoImage(file="assets/resume.png").subsample(13,13)
-
-        # Các nút điều khiển
-        self.play_button = ttk.Button(self.button_frame, image=self.play_icon, command=view_model.play_command)
-        self.play_button.pack(side=LEFT, padx=5)
-
-        self.stop_button = ttk.Button(self.button_frame, image=self.stop_icon, command=view_model.stop_command)
-        self.stop_button.pack(side=LEFT, padx=5)
-
-        self.pause_button = ttk.Button(self.button_frame, image=self.pause_icon, command=view_model.pause_command)
-        self.pause_button.pack(side=LEFT, padx=5)
-
-        self.unpause_button = ttk.Button(self.button_frame, image=self.resume_icon, command=view_model.unpause_command)
-        self.unpause_button.pack(side=LEFT, padx=5)
-
-        # Nút Graph & Select File
-        self.graph_button = ttk.Button(self, text="Graph", command=None, bootstyle="info outline")
-        self.graph_button.pack(pady=5)
-
-        self.select_file_button = ttk.Button(self, text="Select File", command=self.select_file, bootstyle="info outline")
-        self.select_file_button.pack(pady=5)
+        # Cập nhật tiến trình nhạc
+        self.update_progress()
 
         # Thanh trượt âm lượng
+        self.volume_icon = self.load_image_icon("assets/volume.png", (32, 32))
+
+        # Tạo Frame chứa icon và slider
         self.vol_frame = ttk.Frame(self)
-        self.vol_frame.pack(pady=10)
-        ttk.Label(self.vol_frame, text="Volume").pack(side=LEFT, padx=10)
-        self.vol_slider = ttk.Scale(self.vol_frame, from_=0, to=5, orient="horizontal", command=self.setting_volume)
-        self.vol_slider.pack(side=LEFT, padx=10)
+        self.vol_frame.grid(row=2, column=0, padx=5, sticky="w")
+
+        self.vol_label = ttk.Label(self.vol_frame, image=self.volume_icon)
+        self.vol_label.grid(row=0, column=0, padx=5)
+
+        # Thanh trượt âm lượng
+        self.vol_slider = ttk.Scale(self.vol_frame, from_=0, to=5, orient="horizontal", style="info.TScale", command=self.setting_volume)
+        self.vol_slider.grid(row=0, column=1, padx=5)
         self.vol_slider.set(1)
+
+        # Frame chứa nút điều khiển (Đặt ở giữa)
+        self.button_frame = ttk.Frame(self)
+        self.button_frame.grid(row=2, column=1, padx=5, pady=10, sticky="w")
+
+        self.play_icon = self.load_image_icon("assets/play.png", (32, 32))
+        self.pause_icon = self.load_image_icon("assets/pause.png", (32, 32))
+        self.stop_icon = self.load_image_icon("assets/stop.png", (32, 32))
+        self.resume_icon = self.load_image_icon("assets/resume.png", (32, 32))
+        self.open_icon = self.load_image_icon("assets/open.png", (32, 32))
+
+        self.play_button = ttk.Button(self.button_frame, image=self.play_icon, command=view_model.play_command, bootstyle="dark-link")    
+        self.play_button.grid(row=0, column=0, padx=5)
+
+        self.pause_button = ttk.Button(self.button_frame, image=self.pause_icon, command=view_model.pause_command, bootstyle="dark-link")
+        self.pause_button.grid(row=0, column=1, padx=5)
+
+        self.stop_button = ttk.Button(self.button_frame, image=self.stop_icon, command=view_model.stop_command, bootstyle="dark-link")
+        self.stop_button.grid(row=0, column=2, padx=5)     
+
+        self.unpause_button = ttk.Button(self.button_frame, image=self.resume_icon, command=view_model.unpause_command, bootstyle="dark-link")
+        self.unpause_button.grid(row=0, column=3, padx=5)
+
+        # Nút chọn file (Đặt sau cùng)
+        self.select_file_button = ttk.Button(self, text="Open", command=self.select_file, bootstyle="outline-info")
+        self.select_file_button.grid(row=2, column=2, padx=10, sticky="w")
+
 
         self.view_model.add_view_listener(self)
 
     def on_close(self):
-        self.frame.quit()  # Dừng Tkinter loop
-        self.frame.destroy()  # Giải phóng bộ nhớ
+        self.quit()  # Dừng Tkinter loop
+        self.destroy()  # Giải phóng bộ nhớ
         self.view_model.on_close()
-    
+
+    def draw_random_spectrogram(self):
+        self.canvas.delete("all")
+        for i in range(15):
+            x = 20 + i * 35
+            height = random.randint(20, 100)
+            bar = self.canvas.create_rectangle(x, 150 - height, x + 15, 150, fill="#00D8FF", outline="")
+            self.bars.append(bar)
+
+    def update_random_spectrogram(self):
+        for i, bar in enumerate(self.bars):
+            new_height = random.randint(20, 120)
+            self.canvas.coords(bar, 20 + i * 35, 150 - new_height, 35 + i * 35, 150)
+        self.root.after(500, self.update_random_spectrogram)
+
     def select_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.mp3 *.wav *.ogg")])
         if file_path:
-            self.view_model.set_file_audio(file_path)
-    
-    # def show_graph(self):
-    #     new_window = Toplevel(self.root)
-    #     new_window.title("Graph views")
-    #     graph_viewmodel = AudioGraphViewModel(self.view_model.model)
-    #     graph_view = AudioGraphView2(new_window, graph_viewmodel)
-    
+            self.view_model.select_file(file_path)
+
     def setting_volume(self, event=None):
         self.view_model.setting_volume(round(float(self.vol_slider.get()), 1))
+
+    def load_image_icon(self, path, size):
+        img = Image.open(path)
+        img = img.resize(size, Image.LANCZOS)  # Resize bằng LANCZOS để giữ chất lượng
+        return ImageTk.PhotoImage(img)
+
+    # Seek
+    def update_progress(self):
+        pass
+
+    def seek_audio(self, value):
+        pass

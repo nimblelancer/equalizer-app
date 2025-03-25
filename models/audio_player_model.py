@@ -74,13 +74,15 @@ class AudioPlayerModel(G2BaseModel):
     def get_state(self):
         """Lấy trạng thái hiện tại"""
         return self.state
+    
+    def set_audio_file(self, file_path):
+        self.selected_file = file_path
 
     def play_audio(self):
         """Bắt đầu phát âm thanh từ file"""
         if not self.selected_file:
             print("No audio file selected!")
             return
-
         wf = wave.open(self.selected_file, 'rb')
         self.fs = wf.getframerate()
         self.eq_service.reset_audio(fs=self.fs)
