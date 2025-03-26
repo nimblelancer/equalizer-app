@@ -8,6 +8,7 @@ class AudioPlayerViewModel (G2BaseViewModel):
         super().__init__(model)
         self.model.add_listener("player_state_changed", self)
         self.model.add_listener("audio_stream_changed", self)
+        self.model.state_changed_callback = self.on_state_changed
 
         # Trạng thái của View
         self.is_playing = False
@@ -19,6 +20,15 @@ class AudioPlayerViewModel (G2BaseViewModel):
         self.pause_command = G2Command(self.pause_audio)
         self.unpause_command = G2Command(self.unpause_audio)
         self.voice_command = G2Command(self.voice)
+
+    def set_update_callback(self, callback):
+        """Đăng ký hàm cập nhật từ View"""
+        self.update_callback = callback
+
+    def on_state_changed(self, new_state):
+        """Callback khi trạng thái thay đổi"""
+        if self.update_callback:
+            self.update_callback()  # Gọi View cập nhật UI
 
     def play_audio(self):
         """Khi nút Play được nhấn"""
@@ -44,16 +54,18 @@ class AudioPlayerViewModel (G2BaseViewModel):
     def select_file(self, file_path):
         """Khi nút Select File được nhấn"""
         self.model.set_audio_file(file_path)
-        self.selected_file = file_path
 
     def voice(self):
         """Khi nút Voice được nhấn"""
         self.model.start_voice()
-        # self.set_property("voice", True)
 
     def setting_volume(self, value):
         """Khi nút Voice được nhấn"""
         self.model.volume = value
+
+    def toggle_mute(self):
+        """Xử lý khi click vào icon volume"""
+        self.model.toggle_mute()
 
     def on_notify(self, event_name, data):
         if event_name == "player_state_changed":

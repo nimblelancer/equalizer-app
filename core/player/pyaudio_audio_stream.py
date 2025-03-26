@@ -1,5 +1,6 @@
 import pyaudio
 from core.player.base_audio_stream import G2AudioStream
+import time
 
 class PyAudioStreamWrapper(G2AudioStream):
     def __init__(self, channels, rate, input=True, output=True, frames_per_buffer=1024):
@@ -10,6 +11,7 @@ class PyAudioStreamWrapper(G2AudioStream):
                                                  input=input,
                                                  output=output,
                                                  frames_per_buffer=frames_per_buffer)
+        self.current_frame = 0
 
     def start_stream(self):
         """Bắt đầu stream âm thanh"""
@@ -23,7 +25,15 @@ class PyAudioStreamWrapper(G2AudioStream):
 
     def write(self, data):
         """Viết dữ liệu vào stream"""
+        start_time = self.stream.get_time()  # Lấy thời gian trước khi phát
         self.stream.write(data)
+
+        elapsed_time = self.stream.get_time() - start_time  # Tính thời gian thực sự phát
+        self.current_frame += int(elapsed_time * self.stream._rate)  # Đồng bộ số frame
+
+    def get_position(self):
+        """Trả về vị trí frame hiện tại"""
+        return self.current_frame
 
     def read(self, chunk_size):
         """Đọc dữ liệu từ stream"""

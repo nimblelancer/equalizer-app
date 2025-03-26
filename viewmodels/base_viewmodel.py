@@ -2,6 +2,7 @@ class G2BaseViewModel:
     def __init__(self, model):
         self.model = model
         self.view_listeners = []  # Danh sách các listeners (View)
+        self.update_callback = None
         
         # Đăng ký mình vào Model như là một listener
         # self.model.add_listener(self)
@@ -27,4 +28,5 @@ class G2BaseViewModel:
         self.notify_view(event_name, data)  # Thông báo dữ liệu đã cập nhật cho View
 
     def on_close(self):
+        self.update_callback = None
         self.model.on_close()
