@@ -5,15 +5,16 @@ from views.ttkbootstrap.main_view import Mainview
 if __name__ == "__main__":
     # Khởi tạo ttkbootstrap root và Model, View, ViewModel
     root = ttk.Window(themename="superhero")  # Chọn theme phù hợp
-    root.geometry("900x600")
+    root.geometry("600x900")
     root.resizable(False, False)
 
     
     
-    root.grid_rowconfigure(0, weight=1)  # Cho phép hàng mở rộng
-    root.grid_columnconfigure(0, weight=1)  # Cột trái mở rộng
-    root.grid_columnconfigure(1, weight=2)  # Cột giữa (AudioPlayerView) mở rộng nhiều hơn
-    root.grid_columnconfigure(2, weight=1)  # Cột phải mở rộng
+    root.grid_rowconfigure(0, weight=1)  # Hàng đầu tiên mở rộng
+    root.grid_rowconfigure(1, weight=2)  # Hàng thứ hai mở rộng hơn
+    root.grid_rowconfigure(2, weight=1)  # Hàng cuối cùng mở rộng
+
+    root.grid_columnconfigure(0, weight=1)  # Cột chính, căn giữa nội dung
 
     main_view = Mainview(root)
 

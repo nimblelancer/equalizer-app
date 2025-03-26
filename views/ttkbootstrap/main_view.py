@@ -17,10 +17,10 @@ class Mainview:
         self.container = DiContainer()
 
         self.audio_player_view = AudioPlayerView(root, self.container.audio_player_viewmodel())
-        self.audio_player_view.grid(row=0, column=1, columnspan=2, pady=5, sticky=W)
+        self.audio_player_view.grid(row=0, column=0, pady=5, sticky="nsew")  # Căn giữa toàn bộ
 
         self.basic_equalizer_view = EqualizerBasicView(root, self.container.basic_equalizer_viewmodel())
-        self.basic_equalizer_view.grid(row=1, column=0, columnspan=2, pady=5, sticky=W)
+        self.basic_equalizer_view.grid(row=1, column=0, pady=10, sticky="nsew")  # Căn giữa toàn bộ
 
         self.button1 = ttk.Button(root, text="Advance Setting", command=self.advanced_setting)
         self.button1.grid(row=2, column=0, columnspan=2, pady=5, sticky=W)

@@ -5,16 +5,20 @@ from tkinter import filedialog, PhotoImage
 from viewmodels.audio_player_viewmodel import AudioPlayerViewModel
 from PIL import Image, ImageTk
 
-class AudioPlayerView(ttk.Frame):
+class AudioPlayerView(ttk.LabelFrame):
     def __init__(self, root, view_model: AudioPlayerViewModel):
-        super().__init__(root)
+        super().__init__(root, text="Audio Player")
         self.root = root
         self.view_model = view_model
-        self.grid(row=0, column=1, sticky="nsew", padx=10, pady=5)
+
+        
+        self.grid(row=0, column=0, columnspan=3, sticky="ew", padx=10, pady=5)
+        self.columnconfigure((0,1), weight=1)  # Giúp LabelFrame mở rộng theo chiều ngang
+        self.rowconfigure((3), weight=1)  # Đảm bảo hàng cuối cùng không chiếm không gian thừa
 
         # Canvas random spectrogram
         self.canvas = ttk.Canvas(self, width=550, height=150, bg="#121212", highlightthickness=0)
-        self.canvas.grid(row=0, column=0, columnspan=3, pady=10)
+        self.canvas.grid(row=0, column=0, columnspan=3, padx=10, pady=10)
         self.bars = []
         self.draw_random_spectrogram()
         self.update_random_spectrogram()
@@ -24,29 +28,38 @@ class AudioPlayerView(ttk.Frame):
         self.progress_slider = ttk.Scale(
             self, from_=0, to=100, orient="horizontal", variable=self.progress_var, style="primary.TScale", command=self.seek_audio
         )
-        self.progress_slider.grid(row=1, column=0, columnspan=3, pady=5, sticky="ew")  # Đặt thanh giữa phổ và nút
+        self.progress_slider.grid(row=1, column=0, columnspan=3, padx=60, pady=5, sticky="ew")  # Đặt thanh giữa phổ và nút
+
+        # Thời gian bắt đầu
+        self.start_time_label = ttk.Label(self, text="0:00", bootstyle="light")
+        self.start_time_label.grid(row=1, column=0, padx=10, sticky="w")
+
+        # Thời gian còn lại
+        self.remaining_time_label = ttk.Label(self, text="0:00", bootstyle="light")
+        self.remaining_time_label.grid(row=1, column=2, padx=10, sticky="e")
 
         # Cập nhật tiến trình nhạc
         self.update_progress()
 
         # Thanh trượt âm lượng
-        self.volume_icon = self.load_image_icon("assets/volume.png", (32, 32))
+        self.volume_icon = self.load_image_icon("assets/volume.png", (22, 22))
 
         # Tạo Frame chứa icon và slider
         self.vol_frame = ttk.Frame(self)
-        self.vol_frame.grid(row=2, column=0, padx=5, sticky="w")
+        self.vol_frame.grid(row=2, column=0, padx=20, sticky="ew")
 
         self.vol_label = ttk.Label(self.vol_frame, image=self.volume_icon)
-        self.vol_label.grid(row=0, column=0, padx=5)
+        self.vol_label.grid(row=0, column=0, padx=10)
 
         # Thanh trượt âm lượng
         self.vol_slider = ttk.Scale(self.vol_frame, from_=0, to=5, orient="horizontal", style="primary.TScale", command=self.setting_volume)
-        self.vol_slider.grid(row=0, column=1, padx=5)
+        self.vol_slider.grid(row=0, column=1, padx=10)
         self.vol_slider.set(1)
 
         # Frame chứa nút điều khiển (Đặt ở giữa)
         self.button_frame = ttk.Frame(self)
-        self.button_frame.grid(row=2, column=1, padx=5, pady=10, sticky="w")
+        self.button_frame.grid(row=2, column=1, padx=10, pady=5, sticky="nsew")
+
 
         self.play_icon = self.load_image_icon("assets/play.png", (32, 32))
         self.pause_icon = self.load_image_icon("assets/pause.png", (32, 32))
@@ -68,7 +81,7 @@ class AudioPlayerView(ttk.Frame):
 
         # Nút chọn file (Đặt sau cùng)
         self.select_file_button = ttk.Button(self, text="Open", command=self.select_file, bootstyle="outline-primary")
-        self.select_file_button.grid(row=2, column=2, padx=10, sticky="w")
+        self.select_file_button.grid(row=2, column=2, padx=20, sticky="w")
 
 
         self.view_model.add_view_listener(self)
