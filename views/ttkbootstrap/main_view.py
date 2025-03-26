@@ -20,13 +20,16 @@ class Mainview:
         self.audio_player_view.grid(row=0, column=0, pady=5, sticky="nsew")  # Căn giữa toàn bộ
 
         self.basic_equalizer_view = EqualizerBasicView(root, self.container.basic_equalizer_viewmodel())
-        self.basic_equalizer_view.grid(row=1, column=0, pady=10, sticky="nsew")  # Căn giữa toàn bộ
+        self.basic_equalizer_view.grid(row=1, column=0, pady=5, sticky="nsew")  # Căn giữa toàn bộ
 
-        self.advance_setting_btn = ttk.Button(root, text="Advance Setting", command=self.advanced_setting)
-        self.advance_setting_btn.grid(row=2, column=0, columnspan=1,  padx=10, sticky="w")
+        self.additional_setting_btn = ttk.Frame()
+        self.additional_setting_btn.grid(row=2, column=0, columnspan=1, padx=10, pady=10)
 
-        self.show_graph_btn = ttk.Button(root, text="Show Graph", command=self.show_graph)
-        self.show_graph_btn.grid(row=2, column=0, columnspan=1, padx=10, sticky="e")
+        self.advance_setting_btn = ttk.Button(self.additional_setting_btn, text="Advance Setting", command=self.advanced_setting)
+        self.advance_setting_btn.grid(row=0, column=0, columnspan=1,  padx=10)
+
+        self.show_graph_btn = ttk.Button(self.additional_setting_btn, text="Show Graph", command=self.show_graph)
+        self.show_graph_btn.grid(row=0, column=1, columnspan=1, padx=10)
 
         root.protocol("WM_DELETE_WINDOW", self.on_close)
         

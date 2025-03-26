@@ -5,7 +5,7 @@ from views.ttkbootstrap.main_view import Mainview
 if __name__ == "__main__":
     # Khởi tạo ttkbootstrap root và Model, View, ViewModel
     root = ttk.Window()  # Chọn theme phù hợp
-    root.geometry("600x900")
+    root.geometry("600x950")
     root.resizable(False, False)
 
     style = ttk.Style()
