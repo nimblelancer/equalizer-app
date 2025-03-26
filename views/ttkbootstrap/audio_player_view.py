@@ -67,17 +67,17 @@ class AudioPlayerView(ttk.LabelFrame):
         self.resume_icon = self.load_image_icon("assets/resume.png", (32, 32))
         self.open_icon = self.load_image_icon("assets/open.png", (32, 32))
 
-        self.play_button = ttk.Button(self.button_frame, image=self.play_icon, command=view_model.play_command, bootstyle="dark-link")    
+        self.play_button = ttk.Button(self.button_frame, image=self.play_icon, bootstyle="dark-link", command=view_model.play_command, )    
         self.play_button.grid(row=0, column=0, padx=5)
 
-        self.pause_button = ttk.Button(self.button_frame, image=self.pause_icon, command=view_model.pause_command, bootstyle="dark-link")
+        self.pause_button = ttk.Button(self.button_frame, image=self.pause_icon, bootstyle="dark-link", command=view_model.pause_command)
         self.pause_button.grid(row=0, column=1, padx=5)
 
-        self.stop_button = ttk.Button(self.button_frame, image=self.stop_icon, command=view_model.stop_command, bootstyle="dark-link")
+        self.stop_button = ttk.Button(self.button_frame, image=self.stop_icon, bootstyle="dark-link", command=view_model.stop_command)
         self.stop_button.grid(row=0, column=2, padx=5)     
 
-        self.unpause_button = ttk.Button(self.button_frame, image=self.resume_icon, command=view_model.unpause_command, bootstyle="dark-link")
-        self.unpause_button.grid(row=0, column=3, padx=5)
+        self.voice_button = ttk.Button(self.button_frame, text="Voice", bootstyle="outline-primary", command=view_model.unpause_command)
+        self.voice_button.grid(row=0, column=3, padx=5)
 
         # Nút chọn file (Đặt sau cùng)
         self.select_file_button = ttk.Button(self, text="Open", command=self.select_file, bootstyle="outline-primary")
@@ -96,7 +96,7 @@ class AudioPlayerView(ttk.LabelFrame):
         for i in range(15):
             x = 20 + i * 35
             height = random.randint(20, 100)
-            bar = self.canvas.create_rectangle(x, 150 - height, x + 15, 150, fill="#4581ec", outline="")
+            bar = self.canvas.create_rectangle(x, 150 - height, x + 15, 150, fill="#03B0C4", outline="")
             self.bars.append(bar)
 
     def update_random_spectrogram(self):

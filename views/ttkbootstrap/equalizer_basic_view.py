@@ -21,14 +21,14 @@ class EqualizerBasicView(ttk.LabelFrame):
         ttk.Label(self.preset_frame, text="Presets:", foreground="white").grid(row=0, column=0, padx=10)
         self.selected_preset = ttk.StringVar(value="Pop")
 
-        presets = ["Custom", "Normal", "Pop", "Classic", "Heavy M"]
+        presets = ["Rock", "Ballad", "EDM", "Pop"]
         preset_buttons = ttk.Frame(self.preset_frame)
-        preset_buttons.grid(row=0, column=1, padx=10)
+        preset_buttons.grid(row=0, column=1, padx=2, sticky="ew")
 
         for i, preset in enumerate(presets):
             ttk.Radiobutton(
                 preset_buttons, text=preset, value=preset, variable=self.selected_preset,
-                bootstyle="outline-toolbutton", padding=(10, 3)
+                bootstyle="primary", padding=(10, 3)
             ).grid(row=0, column=i, padx=5)
 
         # ✅ Khung chứa sliders & controls
@@ -82,7 +82,7 @@ class EqualizerBasicView(ttk.LabelFrame):
             text="Enable High Cut",
             variable=self.highcut_var,
             command=self.update_equalizer,
-            bootstyle="warning"
+            bootstyle="primary"
         )
         self.highcut_checkbox.grid(row=6, column=0, pady=2)
 
@@ -108,7 +108,7 @@ class EqualizerBasicView(ttk.LabelFrame):
             to=20,
             orient=HORIZONTAL,
             length=150,
-            bootstyle="danger"
+            bootstyle="primary"
         )
         self.highcut_slider.bind("<ButtonRelease-1>", lambda e: self.update_equalizer())
         self.highcut_slider.grid(row=0, column=1, pady=10, padx=10, sticky="e")

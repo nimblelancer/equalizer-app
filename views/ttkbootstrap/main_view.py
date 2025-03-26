@@ -22,11 +22,12 @@ class Mainview:
         self.basic_equalizer_view = EqualizerBasicView(root, self.container.basic_equalizer_viewmodel())
         self.basic_equalizer_view.grid(row=1, column=0, pady=10, sticky="nsew")  # Căn giữa toàn bộ
 
-        self.button1 = ttk.Button(root, text="Advance Setting", command=self.advanced_setting)
-        self.button1.grid(row=2, column=0, columnspan=2, pady=5, sticky=W)
+        self.advance_setting_btn = ttk.Button(root, text="Advance Setting", command=self.advanced_setting)
+        self.advance_setting_btn.grid(row=2, column=0, columnspan=1,  padx=10, sticky="w")
 
-        self.button2 = ttk.Button(root, text="Show Graph", command=self.show_graph)
-        self.button2.grid(row=3, column=0, columnspan=2, pady=5, sticky=W)
+        self.show_graph_btn = ttk.Button(root, text="Show Graph", command=self.show_graph)
+        self.show_graph_btn.grid(row=2, column=0, columnspan=1, padx=10, sticky="e")
+
         root.protocol("WM_DELETE_WINDOW", self.on_close)
         
     def on_close(self):
