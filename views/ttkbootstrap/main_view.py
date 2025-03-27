@@ -25,7 +25,7 @@ class Mainview:
         self.additional_setting_btn = ttk.Frame()
         self.additional_setting_btn.grid(row=2, column=0, columnspan=1, padx=10, pady=10)
 
-        self.advance_setting_btn = ttk.Button(self.additional_setting_btn, text="Advance Setting", command=self.advanced_setting, bootstyle='outline-primary')
+        self.advance_setting_btn = ttk.Button(self.additional_setting_btn, text="Advanced Setting", command=self.advanced_setting, bootstyle='outline-primary')
         self.advance_setting_btn.grid(row=0, column=0, columnspan=1,  padx=10)
 
         self.show_graph_btn = ttk.Button(self.additional_setting_btn, text="Show Graph", command=self.show_graph, bootstyle='outline-primary')

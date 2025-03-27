@@ -69,7 +69,6 @@ class AudioPlayerView(ttk.LabelFrame):
         self.pause_icon = self.load_image_icon("assets/pause.png", (20, 25))
         self.stop_icon = self.load_image_icon("assets/stop.png", (20, 25))
         self.resume_icon = self.load_image_icon("assets/resume.png", (20, 25))
-        self.open_icon = self.load_image_icon("assets/open.png", (20, 25))
         self.voice = self.load_image_icon("assets/voice.png", (20, 25))
         self.stop_voice = self.load_image_icon("assets/stopvoice.png", (30, 25))
 

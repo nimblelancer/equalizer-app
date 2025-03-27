@@ -157,7 +157,29 @@ class EqualizerAdvancedView:
             self.graph_view.update_graph(f, hs)  # Cập nhật đồ thị khi có sự thay đổi
 
     def apply_preset(self):
-        pass
+        """Áp dụng preset và cập nhật giá trị band"""
+        preset_name = self.selected_preset.get()
+        print("Genre:", preset_name)
+
+        # Map preset name to actual band values
+        preset_values = self.presets_data.get(preset_name, {})
+
+        if not preset_values:
+            print("Preset không tồn tại!")
+            return
+
+        bands = {}
+        for band_name, values in preset_values.items():
+            bands[band_name] = {
+                'freq': values.get('freq', 0),
+                'Q': values.get('Q', 0),
+                'gain': values.get('gain', 0)
+            }
+
+        self.bands = bands
+        self.view_model.update_band_values(self.bands)
+
 
     def reset_preset(self):
-        pass
+        self.bands = self.view_model.bands
+        self.view_model.update_band_values(self.bands)
