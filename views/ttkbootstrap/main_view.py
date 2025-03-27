@@ -31,11 +31,11 @@ class Mainview:
         self.show_graph_btn = ttk.Button(self.additional_setting_btn, text="Show Graph", command=self.show_graph, bootstyle='outline-primary')
         self.show_graph_btn.grid(row=0, column=1, columnspan=1, padx=10)
 
-        self.apply_eq_file_btn = ttk.Button(self.additional_setting_btn, text="EQ for File", command=self.apply_eq_for_file)
+        self.apply_eq_file_btn = ttk.Button(self.additional_setting_btn, text="EQ for File", command=self.apply_eq_for_file, bootstyle='outline-primary')
         self.apply_eq_file_btn.grid(row=0, column=2, columnspan=1, padx=10)
         
         self.reset_btn = ttk.Button(self.additional_setting_btn, text="Reset", command=self.show_graph, bootstyle='warning-outline')
-        self.reset_btn.grid(row=0, column=2, columnspan=1, padx=10)
+        self.reset_btn.grid(row=0, column=3, columnspan=1, padx=10)
 
         root.protocol("WM_DELETE_WINDOW", self.on_close)
         

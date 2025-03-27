@@ -69,8 +69,11 @@ class FilterFreqResponseGraphView(ttk.Frame):
             fontsize=font_size, color=main_color_fg
         )
 
-        # 📌 Chỉnh nhãn trục Y rõ hơn
-        self.ax.tick_params(axis='both', which='major', labelsize=font_size, colors=main_color_fg)
+        self.ax.set_yticks([-15, -10, -5, 0, 5, 10, 15])
+        self.ax.set_yticklabels(
+            ['-15', '-10', '-5', '0', '5', '10', '15'], 
+            fontsize=font_size, color=main_color_fg
+        )
 
         # 🔧 Căn chỉnh để không bị tràn chữ
         self.fig.tight_layout()
