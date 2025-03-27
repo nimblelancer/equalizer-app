@@ -25,6 +25,7 @@ class AudioPlayerModel(G2BaseModel):
         self.config_manager = config_manager
         self.state = AudioPlayerState.STOPPED
         self.audio_stream = None
+        self.wave_file = None
         self.audio_stream_class = audio_stream_class
         self.eq_service = eq_service
         self.selected_file = "data/audio.wav"
@@ -41,6 +42,7 @@ class AudioPlayerModel(G2BaseModel):
 
         self.show_graph = False
         self.current_frame = 0
+        
     
     def on_close(self):
         """Hàm xử lý khi đóng ứng dụng hoặc đối tượng AudioPlayerModel2."""
@@ -273,3 +275,65 @@ class AudioPlayerModel(G2BaseModel):
             self.volume = 0  # Mute
 
         self.muted = not self.muted  # Đảo trạng thái mute
+
+    def get_current_time(self):
+        """Lấy thời gian đã phát (giây)"""
+        if self.audio_stream:
+            return self.audio_stream.get_position() / self.fs  # Convert frame → giây
+        return 0
+
+    def get_duration(self):
+        """Lấy tổng thời lượng bài hát (giây)"""
+        if self.selected_file:
+            import wave
+            with wave.open(self.selected_file, "rb") as wf:
+                frames = wf.getnframes()
+                rate = wf.getframerate()
+                return frames / rate
+        return 0
+
+    def seek_to(self, new_time):
+        """Tua đến vị trí mới (giây)"""
+        if not self.selected_file:
+            print("No audio file selected!")
+            return
+
+        with self.lock:
+            print("Seeking to:", new_time)
+
+            # Tính toán vị trí frame mới
+            new_frame = int(new_time * self.fs)  # Chuyển đổi giây → frame
+
+            # Kiểm tra nếu file chưa mở hoặc bị đóng
+            try:
+                self.wave_file.tell()  # Kiểm tra nếu file vẫn mở
+            except Exception:
+                self.wave_file = wave.open(self.selected_file, 'rb')  # Mở lại file
+
+            total_frames = self.wave_file.getnframes()
+
+            if new_frame < total_frames:
+                self.current_frame = new_frame
+                self.wave_file.setpos(new_frame)  # Đặt lại vị trí đọc file
+
+                # Kiểm tra xem stream có tồn tại và mở không trước khi gọi `is_active()`
+                if self.audio_stream and hasattr(self.audio_stream, 'stream'):
+                    try:
+                        if self.audio_stream.stream.is_active():
+                            self.audio_stream.stop_stream()
+                    except OSError:
+                        print("Stream đã bị đóng, khởi tạo lại...")  # Debug
+                        self.audio_stream = None  # Reset lại audio_stream
+
+                # Nếu stream bị đóng hoặc chưa khởi tạo, mở lại nó
+                if self.audio_stream is None:
+                    self.audio_stream = self.audio_stream_class(
+                        channels=self.wave_file.getnchannels(),
+                        rate=self.fs,
+                        frames_per_buffer=self.config_manager.getint('general', 'audio_fpb')
+                    )
+
+                # Reset thread phát nhạc để đọc từ vị trí mới
+                self.stopped_event.set()  # Dừng thread cũ
+                self.stopped_event.clear()  # Cho phép thread mới chạy
+                self._start_audio_thread(self.wave_file)  # Khởi động lại thread phát nhạc

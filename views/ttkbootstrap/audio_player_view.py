@@ -5,6 +5,7 @@ from tkinter import filedialog, PhotoImage
 from viewmodels.audio_player_viewmodel import AudioPlayerViewModel
 from PIL import Image, ImageTk
 from models.audio_player_model import AudioPlayerState
+import time
 
 class AudioPlayerView(ttk.LabelFrame):
     def __init__(self, root, view_model: AudioPlayerViewModel):
@@ -27,19 +28,17 @@ class AudioPlayerView(ttk.LabelFrame):
         # Thêm thanh trượt tiến trình bài hát
         self.progress_var = ttk.DoubleVar()
         self.progress_slider = ttk.Scale(
-            self, from_=0, to=100, orient="horizontal", variable=self.progress_var, style="primary.TScale", command=self.seek_audio
+            self, from_=0, to=100, orient="horizontal", variable=self.progress_var, style="primary.TScale", command=None
         )
         self.progress_slider.grid(row=1, column=0, columnspan=3, padx=60, pady=5, sticky="ew")  # Đặt thanh giữa phổ và nút
 
         # Thời gian bắt đầu
-        self.start_time_label = ttk.Label(self, text="0:00", bootstyle="light")
-        self.start_time_label.grid(row=1, column=0, padx=10, sticky="w")
+        self.time_elapsed_label = ttk.Label(self, text="0:00", bootstyle="light")
+        self.time_elapsed_label.grid(row=1, column=0, padx=10, sticky="w")
 
         # Thời gian còn lại
-        self.remaining_time_label = ttk.Label(self, text="0:00", bootstyle="light")
-        self.remaining_time_label.grid(row=1, column=2, padx=10, sticky="e")
-
-        # Cập nhật tiến trình nhạc
+        self.time_remaining_label = ttk.Label(self, text="0:00", bootstyle="light")
+        self.time_remaining_label.grid(row=1, column=2, padx=10, sticky="e")
         self.update_progress()
 
         # Thanh trượt âm lượng
@@ -72,7 +71,7 @@ class AudioPlayerView(ttk.LabelFrame):
         self.voice = self.load_image_icon("assets/voice.png", (32, 32))
         self.stop_voice = self.load_image_icon("assets/stopvoice.png", (32, 32))
 
-        self.play_button = ttk.Button(self.button_frame, image=self.play_icon, bootstyle="dark-link", command=view_model.play_command, )    
+        self.play_button = ttk.Button(self.button_frame, image=self.play_icon, bootstyle="dark-link", command=self.play_audio, )    
         self.play_button.grid(row=0, column=0, padx=5)
 
         self.pause_button = ttk.Button(self.button_frame, image=self.pause_icon, bootstyle="dark-link", command=view_model.pause_command)
@@ -101,6 +100,10 @@ class AudioPlayerView(ttk.LabelFrame):
         self.quit()  # Dừng Tkinter loop
         self.destroy()  # Giải phóng bộ nhớ
         self.view_model.on_close()
+
+    def play_audio(self):
+        self.view_model.play_audio()
+        self.update_progress()
 
     def draw_random_spectrogram(self):
         self.canvas.delete("all")
@@ -145,7 +148,7 @@ class AudioPlayerView(ttk.LabelFrame):
 
         # Hiển thị button phù hợp với trạng thái
         if state == AudioPlayerState.STOPPED:
-            self.play_button = ttk.Button(self.button_frame, image=self.play_icon, bootstyle="dark-link", command=self.view_model.play_command, )    
+            self.play_button = ttk.Button(self.button_frame, image=self.play_icon, bootstyle="dark-link", command=self.play_audio)    
             self.play_button.grid(row=0, column=0, padx=13)
         elif state == AudioPlayerState.PLAYING:
             self.pause_button = ttk.Button(self.button_frame, image=self.pause_icon, bootstyle="dark-link", command=self.view_model.pause_command)
@@ -163,12 +166,46 @@ class AudioPlayerView(ttk.LabelFrame):
             self.voice_button = ttk.Button(self.button_frame, image=self.voice, bootstyle="dark-link", command=self.view_model.voice_command)
             self.voice_button.grid(row=0, column=3, padx=5)
 
-    # Seek
     def update_progress(self):
-        pass
+        """Cập nhật thanh progress và thời gian đã phát"""
+        if self.view_model.model.get_state() == AudioPlayerState.PLAYING:
+            current_time = self.view_model.get_current_time()
+            duration = self.view_model.get_duration()
+            if duration > 0:
+                # Giới hạn current_time không vượt quá duration
+                current_time = min(current_time, duration)
+                progress_value = (current_time / duration) * 100
+                self.progress_var.set(progress_value)
+
+                # Cập nhật nhãn thời gian
+                self.update_time_labels(current_time, duration)
+
+                # Dừng cập nhật nếu bài hát kết thúc
+                if current_time < duration:
+                    self.after(500, self.update_progress)
 
     def seek_audio(self, value):
-        pass
+        """Tua bài hát đến vị trí mong muốn"""
+        duration = self.view_model.get_duration()
+        if duration > 0:
+            new_time = (float(value) / 100) * duration
+            print("New time:", new_time)
+            self.view_model.seek_to(new_time)
+
+    def update_time_labels(self, current_time, duration):
+        """Cập nhật nhãn thời gian"""
+        elapsed_time = int(current_time)
+        remaining_time = max(int(duration - current_time), 0)  # Không để bị âm
+
+        elapsed_str = time.strftime("%M:%S", time.gmtime(elapsed_time))
+        remaining_str = time.strftime("%M:%S", time.gmtime(remaining_time))
+        self.time_elapsed_label.config(text=elapsed_str)
+        self.time_remaining_label.config(text=remaining_str)
+
+    def format_time(self, seconds):
+        minutes = int(seconds) // 60
+        seconds = int(seconds) % 60
+        return f"{minutes:02}:{seconds:02}"
 
     def toggle_mute(self):
         """Mute hoặc restore volume khi click vào icon"""

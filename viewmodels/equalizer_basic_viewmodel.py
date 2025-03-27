@@ -50,6 +50,24 @@ class EqualizerBasicViewModel(G2BaseViewModel):
 
         print(self.model.eq_apply, self.model.bands, self.model.lowcut_freq, self.model.highcut_freq)
 
+    def apply_equalizer_preset(self, eq_apply, genre, lowcut_applied, lowcut_freq, highcut_applied, highcut_freq):
+        self.eq_apply = eq_apply
+        self.lowcut_apply = lowcut_applied
+        self.highcut_apply = highcut_applied
+
+        if not self.lowcut_apply:
+            self.lowcut_freq = 0
+        else:
+            self.lowcut_freq = lowcut_freq
+        
+        if not self.highcut_apply:
+            self.highcut_freq = 0
+        else:
+            self.highcut_freq = highcut_freq
+
+        self.model.load_bands_from_json(genre)
+        self.model.update_eq_info(self.eq_apply, self.model.bands, self.lowcut_freq, self.highcut_freq*1000)
+
     def on_notify(self, event_name, data):
         if event_name == "eq_info_changed":
             print("eq_info_changed in equalizer_basic_viewmodel")

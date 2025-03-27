@@ -23,7 +23,7 @@ class EqualizerBasicView(ttk.LabelFrame):
         self.preset_frame.grid(row=0, column=0, columnspan=2, pady=10, sticky="w")
         
         ttk.Label(self.preset_frame, text="Presets:", foreground="white").grid(row=0, column=0, padx=10)
-        self.selected_preset = ttk.StringVar(value="Pop")
+        self.selected_preset = ttk.StringVar(value="EDM")
 
         presets = ["Rock", "Ballad", "EDM", "Pop"]
         preset_buttons = ttk.Frame(self.preset_frame)
@@ -32,7 +32,8 @@ class EqualizerBasicView(ttk.LabelFrame):
         for i, preset in enumerate(presets):
             ttk.Radiobutton(
                 preset_buttons, text=preset, value=preset, variable=self.selected_preset,
-                bootstyle="primary", padding=(10, 3)
+                bootstyle="primary", padding=(10, 3),
+                command=self.apply_preset
             ).grid(row=0, column=i, padx=5)
 
         # ✅ Khung chứa sliders & controls
@@ -246,3 +247,15 @@ class EqualizerBasicView(ttk.LabelFrame):
 
     def update_adaptive_settings(self):
         pass
+
+    def apply_preset(self):
+        """Update all band parameters based on the selected preset"""
+        print("Genre: ", self.selected_preset.get())
+        self.view_model.apply_equalizer_preset(
+            self.eqapply_var.get(),
+            self.selected_preset.get().lower(),
+            self.lowcut_var.get(),
+            self.lowcut_slider.get(),
+            self.highcut_var.get(),
+            self.highcut_slider.get(),
+        )

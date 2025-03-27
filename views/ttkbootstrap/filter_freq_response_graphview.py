@@ -34,5 +34,4 @@ class FilterFreqResponseGraphView:
         self.canvas.draw()
 
     def on_close(self):
-        for fig, _ in self.figures:
-            plt.close(fig)  # Đảm bảo rằng các figure được đóng khi ứng dụng kết thúc
+        plt.close(self.fig)  # Đảm bảo rằng các figure được đóng khi ứng dụng kết thúc
