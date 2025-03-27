@@ -78,7 +78,7 @@ class AudioPlayerView(ttk.LabelFrame):
         self.pause_button = ttk.Button(self.button_frame, image=self.pause_icon, bootstyle="dark-link", command=view_model.pause_command)
         self.pause_button.grid(row=0, column=1, padx=5)
 
-        self.resume_button = ttk.Button(self.button_frame, image=self.resume_icon, bootstyle="dark-link", command=view_model.unpause_command)
+        self.resume_button = ttk.Button(self.button_frame, image=self.resume_icon, bootstyle="dark-link", command=self.unpause_audio)
         self.resume_button.grid(row=0, column=1, padx=5)
 
         self.stop_button = ttk.Button(self.button_frame, image=self.stop_icon, bootstyle="dark-link", command=view_model.stop_command)
@@ -104,6 +104,10 @@ class AudioPlayerView(ttk.LabelFrame):
 
     def play_audio(self):
         self.view_model.play_audio()
+        self.update_progress()
+
+    def unpause_audio(self): 
+        self.view_model.unpause_audio()
         self.update_progress()
 
     def draw_random_spectrogram(self):
@@ -178,7 +182,7 @@ class AudioPlayerView(ttk.LabelFrame):
             self.pause_button = ttk.Button(self.button_frame, image=self.pause_icon, bootstyle="dark-link", command=self.view_model.pause_command)
             self.pause_button.grid(row=0, column=0, padx=13)
         elif state == AudioPlayerState.PAUSED:
-            self.resume_button = ttk.Button(self.button_frame, image=self.resume_icon, bootstyle="dark-link", command=self.view_model.unpause_command)
+            self.resume_button = ttk.Button(self.button_frame, image=self.resume_icon, bootstyle="dark-link", command=self.unpause_audio)
             self.resume_button.grid(row=0, column=0, padx=13)
 
         self.stop_button = ttk.Button(self.button_frame, image=self.stop_icon, bootstyle="dark-link", command=self.view_model.stop_command)

@@ -179,6 +179,8 @@ class EqualizerAdvancedView:
         self.bands = bands
         self.view_model.update_band_values(self.bands)
 
+        """Update all band parameters based on the selected preset"""
+        self.view_model.apply_equalizer_advanced_preset(self.selected_preset.get().lower())
 
     def reset_preset(self):
         self.bands = self.view_model.bands

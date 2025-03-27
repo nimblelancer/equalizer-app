@@ -1,13 +1,13 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
-from tkinter import Toplevel
+from tkinter import Toplevel, filedialog
 from di_container import DiContainer
 from views.ttkbootstrap.audio_player_view import AudioPlayerView
 from views.ttkbootstrap.equalizer_basic_view import EqualizerBasicView
 import threading
 from views.ttkbootstrap.audio_graph_view import AudioGraphView
 from views.ttkbootstrap.equalizer_advanced_view import EqualizerAdvancedView
-# from views.tkinter.subview2 import SubView2
+
 
 class Mainview:
     def __init__(self, root):
@@ -31,6 +31,9 @@ class Mainview:
         self.show_graph_btn = ttk.Button(self.additional_setting_btn, text="Show Graph", command=self.show_graph, bootstyle='outline-primary')
         self.show_graph_btn.grid(row=0, column=1, columnspan=1, padx=10)
 
+        self.apply_eq_file_btn = ttk.Button(self.additional_setting_btn, text="EQ for File", command=self.apply_eq_for_file)
+        self.apply_eq_file_btn.grid(row=0, column=2, columnspan=1, padx=10)
+        
         self.reset_btn = ttk.Button(self.additional_setting_btn, text="Reset", command=self.show_graph, bootstyle='warning-outline')
         self.reset_btn.grid(row=0, column=2, columnspan=1, padx=10)
 
@@ -54,6 +57,17 @@ class Mainview:
         AudioGraphView(self.window, self.container.audio_graphs_viewmodel())
 
     def advanced_setting(self):
+        eq_setting_window = Toplevel(self.root)
+        EqualizerAdvancedView(eq_setting_window, self.container.advanced_equalizer_viewmodel())
+
+    def apply_eq_for_file(self):
+        audio_player_model = self.container.audio_player_model()
+        file_path = filedialog.askopenfilename(filetypes=[("Audio Files", "*.wav;*.mp3")])
+        print("File name: ", file_path)
+        if not file_path:
+            return
+        else: 
+            audio_player_model.process_audio_file(file_path)
         self.window = Toplevel(self.root)  # Tạo cửa sổ con
         self.window.resizable(False, False)  # Ngăn kéo thả cửa sổ
         self.window.title("Advanced Equalizer Settings")
