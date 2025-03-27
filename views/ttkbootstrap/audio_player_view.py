@@ -107,16 +107,38 @@ class AudioPlayerView(ttk.LabelFrame):
 
     def draw_random_spectrogram(self):
         self.canvas.delete("all")
+        self.bars = []
+
         for i in range(15):
             x = 20 + i * 35
             height = random.randint(20, 100)
-            bar = self.canvas.create_rectangle(x, 150 - height, x + 15, 150, fill="#03B0C4", outline="")
-            self.bars.append(bar)
+            
+            # Giảm chiều cao thanh bar để tránh oval bị tràn xuống
+            bar_height = height  # Giảm bớt 5 pixel để oval không bị đè
+
+            # Vẽ thân bar (hình chữ nhật)
+            bar = self.canvas.create_rectangle(x, 150 - bar_height, x + 15, 150, fill="#03B0C4", outline="")
+
+            # Vẽ đầu bo tròn (hình oval)
+            radius = 10  # Điều chỉnh độ bo tròn
+            oval = self.canvas.create_oval(x, 150 - bar_height - radius, x + 15, 150 - bar_height + radius - 1, fill="#03B0C4", outline="")
+
+            self.bars.append((bar, oval))  # Lưu cả 2 phần để cập nhật sau
 
     def update_random_spectrogram(self):
-        for i, bar in enumerate(self.bars):
+        for i, (bar, oval) in enumerate(self.bars):
             new_height = random.randint(20, 120)
-            self.canvas.coords(bar, 20 + i * 35, 150 - new_height, 35 + i * 35, 150)
+            
+            # Giảm chiều cao bar để tránh oval bị tràn vào
+            bar_height = new_height - 5
+
+            # Cập nhật vị trí của thân bar
+            self.canvas.coords(bar, 20 + i * 35, 150 - bar_height, 35 + i * 35, 150)
+
+            # Cập nhật vị trí của oval
+            radius = 7
+            self.canvas.coords(oval, 20 + i * 35, 150 - bar_height - radius, 35 + i * 35, 150 - bar_height + radius - 1)
+
         self.root.after(500, self.update_random_spectrogram)
 
     def select_file(self):
