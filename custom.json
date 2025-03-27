@@ -4,7 +4,8 @@
       "mytheme": {
         "type": "dark",
         "colors": {
-          "primary": "#03B0C4",
+
+          "primary": "#17c0eb",
             "secondary": "#555555",
             "success": "#77b300",
             "info": "#c0c0c0",

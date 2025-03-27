@@ -25,11 +25,14 @@ class Mainview:
         self.additional_setting_btn = ttk.Frame()
         self.additional_setting_btn.grid(row=2, column=0, columnspan=1, padx=10, pady=10)
 
-        self.advance_setting_btn = ttk.Button(self.additional_setting_btn, text="Advance Setting", command=self.advanced_setting)
+        self.advance_setting_btn = ttk.Button(self.additional_setting_btn, text="Advance Setting", command=self.advanced_setting, bootstyle='outline-primary')
         self.advance_setting_btn.grid(row=0, column=0, columnspan=1,  padx=10)
 
-        self.show_graph_btn = ttk.Button(self.additional_setting_btn, text="Show Graph", command=self.show_graph)
+        self.show_graph_btn = ttk.Button(self.additional_setting_btn, text="Show Graph", command=self.show_graph, bootstyle='outline-primary')
         self.show_graph_btn.grid(row=0, column=1, columnspan=1, padx=10)
+
+        self.reset_btn = ttk.Button(self.additional_setting_btn, text="Reset", command=self.show_graph, bootstyle='warning-outline')
+        self.reset_btn.grid(row=0, column=2, columnspan=1, padx=10)
 
         root.protocol("WM_DELETE_WINDOW", self.on_close)
         
@@ -55,3 +58,6 @@ class Mainview:
         self.window.resizable(False, False)  # Ngăn kéo thả cửa sổ
         self.window.title("Advanced Equalizer Settings")
         EqualizerAdvancedView(self.window, self.container.advanced_equalizer_viewmodel())
+
+    def reset_preset(self):
+        pass

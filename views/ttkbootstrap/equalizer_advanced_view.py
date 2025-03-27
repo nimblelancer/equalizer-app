@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from viewmodels.equalizer_advanced_viewmodel import EqualizerAdvancedViewModel
 from views.ttkbootstrap.filter_freq_response_graphview import FilterFreqResponseGraphView
-from tkinter import Toplevel
+import json
 class EqualizerAdvancedView:
     def __init__(self, root, view_model: EqualizerAdvancedViewModel):
         self.frame = ttk.Frame(root)
@@ -28,6 +28,42 @@ class EqualizerAdvancedView:
         for band_name, params in self.bands.items():
             self.create_band_controls(band_name, params, col)
             col += 1
+
+        
+        # 🎯 Đọc dữ liệu từ file JSON
+        with open("eq_info_conf.json", "r") as json_file:
+            self.presets_data = json.load(json_file)
+
+        # 🟢 Khung chứa radio buttons
+        self.preset_frame = ttk.Frame(self.frame)
+        self.preset_frame.grid(row=2, column=0, padx=10, pady=10)
+
+        self.selected_preset = tk.StringVar(value=list(self.presets_data.keys())[0])  # Chọn preset đầu tiên
+
+        preset_buttons = ttk.LabelFrame(self.preset_frame, text='Presets')
+        preset_buttons.grid(row=0, column=1, padx=2)
+
+        max_columns = 5
+        row, col = 0, 0
+
+        # Cấu hình cột để đảm bảo độ rộng bằng nhau
+        for i in range(max_columns):
+            preset_buttons.columnconfigure(i, weight=1, uniform="equal")
+
+        # 🟡 Tạo các radio button và căn chỉnh ngay ngắn
+        for preset in self.presets_data.keys():
+            ttk.Radiobutton(
+                preset_buttons, text=preset.capitalize(), value=preset, variable=self.selected_preset,
+                bootstyle="primary", padding=(10, 3),
+                command=self.apply_preset
+            ).grid(row=row, column=col, padx=10, pady=5, sticky="w")  # 🔹 Căn trái chữ
+
+            col += 1
+            if col >= max_columns:  # Nếu đủ 5 preset thì xuống dòng mới
+                col = 0
+                row += 1
+        self.reset_btn = ttk.Button(self.preset_frame, text="Reset", command=self.reset_preset, bootstyle='warning-outline')
+        self.reset_btn.grid(row=0, column=2, padx=10, pady=5, sticky="w")
 
         self.view_model.add_view_listener(self)
         root.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -120,3 +156,8 @@ class EqualizerAdvancedView:
             f, hs = self.view_model.get_frequency_response()
             self.graph_view.update_graph(f, hs)  # Cập nhật đồ thị khi có sự thay đổi
 
+    def apply_preset(self):
+        pass
+
+    def reset_preset(self):
+        pass

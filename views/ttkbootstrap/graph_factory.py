@@ -7,7 +7,7 @@ class GraphFactory:
         self.line = None
         self.im = None
 
-    PRIMARY_COLOR = "#03B0C4"  # Màu xanh primary
+    PRIMARY_COLOR = "#17c0eb"  # Màu xanh primary
 
     def create_waveform(self):
         """
