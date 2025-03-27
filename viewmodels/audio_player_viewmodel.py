@@ -75,3 +75,12 @@ class AudioPlayerViewModel (G2BaseViewModel):
             """"""
         else:
             super().notify_view(event_name, data)  # Gọi hàm super
+
+    def get_current_time(self):
+        return self.model.get_current_time()
+
+    def get_duration(self):
+        return self.model.get_duration()
+
+    def seek_to(self, new_time):
+        self.model.seek_to(new_time)

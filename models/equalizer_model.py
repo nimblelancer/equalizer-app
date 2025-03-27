@@ -24,14 +24,14 @@ class EqualizerModel(G2BaseModel):
             'Treble': {'freq': 8000, 'Q': 1.0, 'gain': 0},
         }
         
-        self.load_bands_from_json("eq_info_conf.json","edm")
+        self.load_bands_from_json("edm")
 
         print(self.bands)
 
-    def load_bands_from_json(self, file_path, genre):
+    def load_bands_from_json(self, genre):
         """Hàm này dùng để load các giá trị bands từ file JSON."""
         try:
-            with open(file_path, 'r') as json_file:
+            with open("eq_info_conf.json", 'r') as json_file:
                 # Tải dữ liệu từ file JSON
                 data = json.load(json_file)
                 

@@ -107,3 +107,4 @@ class EqualizerAdvancedView(ttk.Frame):
             label_gain.pack()
 
             self.controls.append((slider_q, slider_gain))
+        plt.close(self.fig)  # Đảm bảo rằng các figure được đóng khi ứng dụng kết thúc
