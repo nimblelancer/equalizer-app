@@ -27,6 +27,10 @@ class EqualizerAdvancedViewModel(G2BaseViewModel):
         self.bands = bands
         self.model.update_eq_info(self.eq_apply, self.bands, self.model.lowcut_freq, self.model.highcut_freq)
 
+    def apply_equalizer_advanced_preset(self, genre):
+        self.model.load_bands_from_json(genre)
+        self.model.update_eq_info(self.eq_apply, self.model.bands, self.model.lowcut_freq, self.model.highcut_freq)
+    
     def get_frequency_response(self):
         # Tạo mảng tần số từ 20 Hz đến 20 kHz để kiểm tra đáp ứng tần số
         

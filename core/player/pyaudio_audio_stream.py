@@ -35,9 +35,9 @@ class PyAudioStreamWrapper(G2AudioStream):
         """Trả về vị trí frame hiện tại"""
         return self.current_frame
 
-    def read(self, chunk_size):
+    def read(self, chunk_size, exception_on_overflow=False):
         """Đọc dữ liệu từ stream"""
-        return self.stream.read(chunk_size)
+        return self.stream.read(chunk_size, exception_on_overflow=exception_on_overflow)
 
     def close(self):
         """Đóng stream và kết thúc PyAudio"""

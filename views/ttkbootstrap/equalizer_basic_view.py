@@ -250,7 +250,6 @@ class EqualizerBasicView(ttk.LabelFrame):
 
     def apply_preset(self):
         """Update all band parameters based on the selected preset"""
-        print("Genre: ", self.selected_preset.get())
         self.view_model.apply_equalizer_preset(
             self.eqapply_var.get(),
             self.selected_preset.get().lower(),

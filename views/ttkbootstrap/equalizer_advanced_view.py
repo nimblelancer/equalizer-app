@@ -87,3 +87,7 @@ class EqualizerAdvancedView:
 
             f, hs = self.view_model.get_frequency_response()
             self.graph_view.update_graph(f, hs)  # Cập nhật đồ thị khi có sự thay đổi
+
+    def apply_preset(self):
+        """Update all band parameters based on the selected preset"""
+        self.view_model.apply_equalizer_advanced_preset(self.selected_preset.get().lower())
