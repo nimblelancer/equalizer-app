@@ -6,6 +6,8 @@ from viewmodels.audio_player_viewmodel import AudioPlayerViewModel
 from PIL import Image, ImageTk
 from models.audio_player_model import AudioPlayerState
 import time
+from ttkbootstrap.icons import Emoji
+from ttkbootstrap import Style
 
 class AudioPlayerView(ttk.LabelFrame):
     def __init__(self, root, view_model: AudioPlayerViewModel):
@@ -50,7 +52,7 @@ class AudioPlayerView(ttk.LabelFrame):
         self.vol_frame.grid(row=2, column=0, padx=20, sticky="ew")
 
         # Nút icon volume (thay vì Label, chuyển thành Button để click được)
-        self.vol_button = ttk.Button(self.vol_frame, image=self.volume_icon, command=self.toggle_mute)
+        self.vol_button = ttk.Button(self.vol_frame, image=self.volume_icon, command=self.toggle_mute, bootstyle="link")
         self.vol_button.grid(row=0, column=0, padx=10)
 
         # Thanh trượt âm lượng
@@ -63,16 +65,16 @@ class AudioPlayerView(ttk.LabelFrame):
         self.button_frame.grid(row=2, column=1, padx=10, pady=5, sticky="nsew")
 
 
-        self.play_icon = self.load_image_icon("assets/play.png", (32, 32))
-        self.pause_icon = self.load_image_icon("assets/pause.png", (32, 32))
-        self.stop_icon = self.load_image_icon("assets/stop.png", (32, 32))
-        self.resume_icon = self.load_image_icon("assets/resume.png", (32, 32))
-        self.open_icon = self.load_image_icon("assets/open.png", (32, 32))
-        self.voice = self.load_image_icon("assets/voice.png", (32, 32))
-        self.stop_voice = self.load_image_icon("assets/stopvoice.png", (32, 32))
+        self.play_icon = self.load_image_icon("assets/play.png", (20, 25))
+        self.pause_icon = self.load_image_icon("assets/pause.png", (20, 25))
+        self.stop_icon = self.load_image_icon("assets/stop.png", (20, 25))
+        self.resume_icon = self.load_image_icon("assets/resume.png", (20, 25))
+        self.open_icon = self.load_image_icon("assets/open.png", (20, 25))
+        self.voice = self.load_image_icon("assets/voice.png", (20, 25))
+        self.stop_voice = self.load_image_icon("assets/stopvoice.png", (30, 25))
 
-        self.play_button = ttk.Button(self.button_frame, image=self.play_icon, bootstyle="dark-link", command=self.play_audio, )    
-        self.play_button.grid(row=0, column=0, padx=5)
+        self.play_button = ttk.Button(self.button_frame, text=self.play_icon, bootstyle="outline", command=self.play_audio)    
+        self.play_button.grid(row=0, column=0, padx=10, pady=10, ipadx=10, ipady=5)
 
         self.pause_button = ttk.Button(self.button_frame, image=self.pause_icon, bootstyle="dark-link", command=view_model.pause_command)
         self.pause_button.grid(row=0, column=1, padx=5)
@@ -121,19 +123,20 @@ class AudioPlayerView(ttk.LabelFrame):
             bar_height = height  # Giảm bớt 5 pixel để oval không bị đè
 
             # Vẽ thân bar (hình chữ nhật)
-            bar = self.canvas.create_rectangle(x, 150 - bar_height, x + 15, 150, fill="#03B0C4", outline="")
+            bar = self.canvas.create_rectangle(x, 150 - bar_height, x + 15, 150, fill="#17c0eb", outline="")
 
             # Vẽ đầu bo tròn (hình oval)
             radius = 10  # Điều chỉnh độ bo tròn
-            oval = self.canvas.create_oval(x, 150 - bar_height - radius, x + 15, 150 - bar_height + radius - 1, fill="#03B0C4", outline="")
+            oval = self.canvas.create_oval(x, 150 - bar_height - radius, x + 15, 150 - bar_height + radius - 1, fill="#17c0eb", outline="")
 
             self.bars.append((bar, oval))  # Lưu cả 2 phần để cập nhật sau
 
     def update_random_spectrogram(self):
+        if not hasattr(self, "canvas") or not self.winfo_exists():  
+            return  # Dừng nếu cửa sổ đã bị đóng
+
         for i, (bar, oval) in enumerate(self.bars):
             new_height = random.randint(20, 120)
-            
-            # Giảm chiều cao bar để tránh oval bị tràn vào
             bar_height = new_height - 5
 
             # Cập nhật vị trí của thân bar
@@ -187,10 +190,10 @@ class AudioPlayerView(ttk.LabelFrame):
         self.stop_button.grid(row=0, column=1, padx=13)     
         if state == AudioPlayerState.RECORDING:
             self.stop_voice_button = ttk.Button(self.button_frame, image=self.stop_voice, bootstyle="dark-link", command=self.view_model.stop_command)
-            self.stop_voice_button.grid(row=0, column=3, padx=5)
+            self.stop_voice_button.grid(row=0, column=3, padx=13)
         else:
             self.voice_button = ttk.Button(self.button_frame, image=self.voice, bootstyle="dark-link", command=self.view_model.voice_command)
-            self.voice_button.grid(row=0, column=3, padx=5)
+            self.voice_button.grid(row=0, column=3, padx=13)
 
     def update_progress(self):
         """Cập nhật thanh progress và thời gian đã phát"""

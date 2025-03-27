@@ -7,11 +7,13 @@ class GraphFactory:
         self.line = None
         self.im = None
 
+    PRIMARY_COLOR = "#17c0eb"  # Màu xanh primary
+
     def create_waveform(self):
         """
         Khởi tạo đồ thị Waveform mà không có dữ liệu.
         """
-        self.line, = self.ax.plot([], [])
+        self.line, = self.ax.plot([], [], color=self.PRIMARY_COLOR)
         self.ax.set_title("Waveform")
         self.ax.set_xlabel("Time [s]")
         self.ax.set_ylabel("Amplitude")
@@ -29,7 +31,7 @@ class GraphFactory:
         """
         Khởi tạo Frequency Spectrum mà không có dữ liệu.
         """
-        self.line, = self.ax.plot([], [])
+        self.line, = self.ax.plot([], [], color=self.PRIMARY_COLOR)
         self.ax.set_title("Frequency Spectrum")
         self.ax.set_xlabel("Frequency [Hz]")
         self.ax.set_ylabel("Amplitude")
@@ -38,7 +40,7 @@ class GraphFactory:
         """
         Khởi tạo Volume Level mà không có dữ liệu.
         """
-        self.line, = self.ax.plot([], [])
+        self.line, = self.ax.plot([], [], color=self.PRIMARY_COLOR)
         self.ax.set_title("Volume Level")
         self.ax.set_xlabel("Time [s]")
         self.ax.set_ylabel("Amplitude")
@@ -47,7 +49,11 @@ class GraphFactory:
         """
         Khởi tạo Bar Chart mà không có dữ liệu.
         """
-        self.bar = self.ax.bar(['bass', 'mid_bass', 'midrange', 'upper_mid', 'treble'], [0,0,0,0,0], color=['blue', 'green', 'orange', 'red', 'purple'])
+        self.bar = self.ax.bar(
+            ['bass', 'mid_bass', 'midrange', 'upper_mid', 'treble'],
+            [0, 0, 0, 0, 0],
+            color=['blue', 'green', 'orange', 'red', 'purple']
+        )
         self.ax.set_title("Bar Chart")
         self.ax.set_xlabel("Frequency Bands")
         self.ax.set_ylabel("Amplitude")
@@ -56,7 +62,7 @@ class GraphFactory:
         """
         Khởi tạo FFT mà không có dữ liệu.
         """
-        self.line, = self.ax.plot([], [])
+        self.line, = self.ax.plot([], [], color=self.PRIMARY_COLOR)
         self.ax.set_title("FFT")
         self.ax.set_xlabel("Frequency [Hz]")
         self.ax.set_ylabel("Log(Amplitude)")
@@ -65,7 +71,7 @@ class GraphFactory:
         """
         Khởi tạo Frequency Response mà không có dữ liệu.
         """
-        self.line, = self.ax.plot([], [])
+        self.line, = self.ax.plot([], [], color=self.PRIMARY_COLOR)
         self.ax.set_title("Frequency Response")
         self.ax.set_xscale('log')
         self.ax.set_xlabel("Frequency [Hz]")
