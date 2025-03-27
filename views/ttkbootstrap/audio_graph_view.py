@@ -1,4 +1,5 @@
-import tkinter as tk
+from ttkbootstrap import Style
+import ttkbootstrap as ttk
 # import numpy as np
 import time
 from viewmodels.audio_graph_viewmodel import AudioGraphViewModel
@@ -12,40 +13,43 @@ from views.ttkbootstrap.graph_factory import GraphFactory
 
 class AudioGraphView:
     def __init__(self, root, view_model: AudioGraphViewModel):
-        self.frame = tk.Frame(root)
-        self.frame.pack(fill=tk.BOTH, expand=True)
+        self.frame = ttk.Frame(root)
+        self.frame.pack(fill=ttk.BOTH, expand=True)
 
         # Tạo một frame chứa các button
-        self.config_frame = tk.Frame(self.frame)
+        self.config_frame = ttk.Frame(self.frame)
         self.config_frame.pack(pady=20)
 
         self.view_model = view_model
         self.view_model.add_view_listener(self)
 
         # Checkbutton để bật/tắt đồ thị
-        self.show_graph_var = tk.IntVar()
-        self.show_graph_checkbox = tk.Checkbutton(self.config_frame, text="Show Graph", variable=self.show_graph_var, command=self.show_graph)
+        self.show_graph_var = ttk.IntVar()
+        self.show_graph_checkbox = ttk.Checkbutton(
+            self.config_frame, text="Show Graph", variable=self.show_graph_var, command=self.show_graph
+        )
         self.show_graph_var.set(self.view_model.show_graph)
-        self.show_graph_checkbox.pack(side=tk.LEFT, padx=5)
+        self.show_graph_checkbox.grid(row=0, column=0, padx=5, sticky="w")
 
         # Nhập tần số thấp nhất và cao nhất để giới hạn trục tần số
-        self.freq_low_label = tk.Label(self.config_frame, text="Low Frequency (Hz):")
-        self.freq_low_label.pack(side=tk.LEFT, padx=5)
-        self.freq_low_entry = tk.Entry(self.config_frame)
-        self.freq_low_entry.pack(side=tk.LEFT, padx=5)
-        self.freq_low_entry.insert(tk.END, "20")  # Giá trị mặc định là 20Hz
+        self.freq_low_label = ttk.Label(self.config_frame, text="Low Frequency (Hz):")
+        self.freq_low_label.grid(row=0, column=1, padx=5, sticky="w")
+        self.freq_low_entry = ttk.Entry(self.config_frame)
+        self.freq_low_entry.grid(row=0, column=2, padx=5, sticky="w")
+        self.freq_low_entry.insert(ttk.END, "20")
 
-        self.freq_high_label = tk.Label(self.config_frame, text="High Frequency (Hz):")
-        self.freq_high_label.pack(side=tk.LEFT, padx=5)
-        self.freq_high_entry = tk.Entry(self.config_frame)
-        self.freq_high_entry.pack(side=tk.LEFT, padx=5)
-        self.freq_high_entry.insert(tk.END, "5000")  # Giá trị mặc định là 5000Hz
+        self.freq_high_label = ttk.Label(self.config_frame, text="High Frequency (Hz):")
+        self.freq_high_label.grid(row=0, column=3, padx=5, sticky="w")
+        self.freq_high_entry = ttk.Entry(self.config_frame)
+        self.freq_high_entry.grid(row=0, column=4, padx=5, sticky="w")
+        self.freq_high_entry.insert(ttk.END, "5000")
 
         self.sample_rate = 44100
 
         self.figures = []
         self.graphs = []
-
+        
+        # Các biến lưu đồ thị
         self.graph_original_waveform = None
         self.graph_filtered_waveform = None
         self.graph_original_spectrogram = None
@@ -59,6 +63,10 @@ class AudioGraphView:
         self.graph_original_fft = None
         self.graph_filtered_fft = None
 
+        self.style = Style()
+        self.theme_bg = self.style.colors.get("bg")
+        self.theme_fg = self.style.colors.get("fg")
+        
         self.create_graphs(self.frame)
         root.protocol("WM_DELETE_WINDOW", self.on_close)
 
@@ -74,16 +82,16 @@ class AudioGraphView:
 
     def create_graphs(self, frame):
         # Tạo Canvas để chứa các đồ thị
-        canvas = tk.Canvas(frame)
-        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        canvas = ttk.Canvas(frame)
+        canvas.pack(side=ttk.LEFT, fill=ttk.BOTH, expand=True)
 
         # Thêm Scrollbar vào canvas
-        scrollbar = tk.Scrollbar(frame, orient="vertical", command=canvas.yview)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        scrollbar = ttk.Scrollbar(frame, orient="vertical", command=canvas.yview)
+        scrollbar.pack(side=ttk.RIGHT, fill=ttk.Y)
         canvas.configure(yscrollcommand=scrollbar.set)
 
         # Tạo một frame con để chứa các Canvas vẽ đồ thị
-        graph_frame = tk.Frame(canvas)
+        graph_frame = ttk.Frame(canvas)
         canvas.create_window((0, 0), window=graph_frame, anchor="nw")
 
         # Số hàng và cột để chia đồ thị
@@ -94,6 +102,37 @@ class AudioGraphView:
             # Tạo figure cho original và filtered data
             fig_original, ax_original = plt.subplots(figsize=(8, 4))
             fig_filtered, ax_filtered = plt.subplots(figsize=(8, 4))
+
+            fig_original.patch.set_facecolor(self.theme_bg)
+            fig_filtered.patch.set_facecolor(self.theme_bg)
+
+            # Đặt màu nền
+            fig_original.patch.set_facecolor(self.theme_bg)
+            fig_filtered.patch.set_facecolor(self.theme_bg)
+            ax_original.set_facecolor(self.theme_bg)
+            ax_filtered.set_facecolor(self.theme_bg)
+
+            # Đặt màu chữ cho các trục
+            ax_original.xaxis.label.set_color(self.theme_fg)
+            ax_original.yaxis.label.set_color(self.theme_fg)
+            ax_original.title.set_color(self.theme_fg)
+            ax_original.tick_params(colors=self.theme_fg)
+
+            ax_filtered.xaxis.label.set_color(self.theme_fg)
+            ax_filtered.yaxis.label.set_color(self.theme_fg)
+            ax_filtered.title.set_color(self.theme_fg)
+            ax_filtered.tick_params(colors=self.theme_fg)
+
+            # Đặt màu chữ cho phần viền của đồ thị
+            ax_original.spines['bottom'].set_color(self.theme_fg)
+            ax_original.spines['top'].set_color(self.theme_fg)
+            ax_original.spines['right'].set_color(self.theme_fg)
+            ax_original.spines['left'].set_color(self.theme_fg)
+
+            ax_filtered.spines['bottom'].set_color(self.theme_fg)
+            ax_filtered.spines['top'].set_color(self.theme_fg)
+            ax_filtered.spines['right'].set_color(self.theme_fg)
+            ax_filtered.spines['left'].set_color(self.theme_fg)
 
             graph_factory_original = GraphFactory(ax_original)
             graph_factory_filtered = GraphFactory(ax_filtered)
@@ -211,8 +250,6 @@ class AudioGraphView:
     def show_graph(self):
         self.view_model.toggle_graph(self.show_graph_var.get())
 
-    def pack(self, **kwargs):
-        self.frame.pack(**kwargs)
 
     def update_view(self, event_name, data):
         if event_name == "audio_chunk_changed":

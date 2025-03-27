@@ -46,9 +46,12 @@ class Mainview:
         print(f"Number of threads remaining: {threading.active_count()}")
 
     def show_graph(self):
-        audio_graph_window = Toplevel(self.root)
-        AudioGraphView(audio_graph_window, self.container.audio_graphs_viewmodel())
+        self.window = Toplevel(self.root)
+        self.window.title("Audio Graph")
+        AudioGraphView(self.window, self.container.audio_graphs_viewmodel())
 
     def advanced_setting(self):
-        eq_setting_window = Toplevel(self.root)
-        EqualizerAdvancedView(eq_setting_window, self.container.advanced_equalizer_viewmodel())
+        self.window = Toplevel(self.root)  # Tạo cửa sổ con
+        self.window.resizable(False, False)  # Ngăn kéo thả cửa sổ
+        self.window.title("Advanced Equalizer Settings")
+        EqualizerAdvancedView(self.window, self.container.advanced_equalizer_viewmodel())

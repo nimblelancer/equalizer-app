@@ -1,27 +1,33 @@
 import tkinter as tk
+from tkinter import ttk
 from viewmodels.equalizer_advanced_viewmodel import EqualizerAdvancedViewModel
 from views.ttkbootstrap.filter_freq_response_graphview import FilterFreqResponseGraphView
-
+from tkinter import Toplevel
 class EqualizerAdvancedView:
     def __init__(self, root, view_model: EqualizerAdvancedViewModel):
-        self.frame = tk.Frame(root)
-        self.frame.pack()
+        self.frame = ttk.Frame(root)
+        self.frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
         self.view_model = view_model
 
         self.graph_view = FilterFreqResponseGraphView(self.frame)
+        self.graph_view.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
         f, hs = self.view_model.get_frequency_response()
         self.graph_view.update_graph(f, hs)
-        
 
-        # Tạo các điều khiển cho dải tần số
-        self.first_row_frame = tk.Frame(self.frame)
-        self.first_row_frame.pack()
+        # Frame chứa các điều khiển của Equalizer
+        self.first_row_frame = ttk.Frame(self.frame)
+        self.first_row_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
+
+        # Chia layout theo số lượng band
+        self.first_row_frame.columnconfigure(tuple(range(len(self.view_model.bands))), weight=1)
 
         self.band_controls = {}
-        self.bands = self.view_model.bands  # Các tần số trung tâm, Q và Gain
+        self.bands = self.view_model.bands  # Các thông số: freq, Q, gain
+        col = 0
         for band_name, params in self.bands.items():
-            self.create_band_controls(band_name, params)
+            self.create_band_controls(band_name, params, col)
+            col += 1
 
         self.view_model.add_view_listener(self)
         root.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -29,44 +35,66 @@ class EqualizerAdvancedView:
     def on_close(self):
         """Hàm này sẽ được gọi khi cửa sổ bị đóng"""
         print("Closing Setting...")
-
         self.graph_view.on_close()
         self.view_model.on_close()
 
-    def create_band_controls(self, band_name, params, from_=20, to_=20000):
-        band_frame = tk.Frame(self.first_row_frame)
-        band_frame.pack(side=tk.LEFT, padx=5)
+    def create_band_controls(self, band_name, params, col, from_=20, to_=20000):
+        band_frame = ttk.LabelFrame(self.first_row_frame, text=band_name)
+        band_frame.grid(row=0, column=col, padx=5, pady=5, sticky="nsew")
 
-        label = tk.Label(band_frame, text=f"{band_name}")
-        label.pack()
+        # Cấu hình để kéo giãn theo cửa sổ
+        band_frame.columnconfigure(0, weight=1)
 
-        # Tạo slider cho tần số
-        freq_slider = tk.Scale(band_frame, from_=from_, to=to_, orient="horizontal", label="Frequency")
+        # Tạo slider cho Frequency
+        freq_label = ttk.Label(band_frame, text="Frequency")
+        freq_label.grid(row=0, column=0, padx=5, pady=2)
+        freq_slider = ttk.Scale(band_frame, from_=from_, to=to_, orient="horizontal")
+        freq_slider.grid(row=1, column=0, padx=5, pady=2, sticky="ew")
+        freq_value_label = ttk.Label(band_frame, text=f"{params['freq']:.0f} Hz")
+        freq_value_label.grid(row=1, column=1, padx=5, pady=2)
+        freq_slider.bind("<Motion>", lambda event, label=freq_value_label: self.update_label(event, label, "Hz"))
         freq_slider.bind("<ButtonRelease-1>", lambda event, band=band_name: self.update_band_value(band))
         freq_slider.set(params['freq'])
-        freq_slider.pack()
 
         # Tạo slider cho Q
-        q_slider = tk.Scale(band_frame, from_=0.1, to=10, resolution=0.1, orient="horizontal", label="Q")
+        q_label = ttk.Label(band_frame, text="Q")
+        q_label.grid(row=2, column=0, padx=5, pady=2)
+        q_slider = ttk.Scale(band_frame, from_=0.1, to=10, orient="horizontal")
+        q_slider.grid(row=3, column=0, padx=5, pady=2, sticky="ew")
+        q_value_label = ttk.Label(band_frame, text=f"{params['Q']:.1f}")
+        q_value_label.grid(row=3, column=1, padx=5, pady=2)
+        q_slider.bind("<Motion>", lambda event, label=q_value_label: self.update_label(event, label, ""))
         q_slider.bind("<ButtonRelease-1>", lambda event, band=band_name: self.update_band_value(band))
         q_slider.set(params['Q'])
-        q_slider.pack()
 
         # Tạo slider cho Gain
-        gain_slider = tk.Scale(band_frame, from_=-24, to=24, orient="horizontal", label="Gain (dB)")
+        gain_label = ttk.Label(band_frame, text="Gain (dB)")
+        gain_label.grid(row=4, column=0, padx=5, pady=2)
+        gain_slider = ttk.Scale(band_frame, from_=-24, to=24, orient="horizontal")
+        gain_slider.grid(row=5, column=0, padx=5, pady=2, sticky="ew")
+        gain_value_label = ttk.Label(band_frame, text=f"{params['gain']:.1f} dB")
+        gain_value_label.grid(row=5, column=1, padx=5, pady=2)
+        gain_slider.bind("<Motion>", lambda event, label=gain_value_label: self.update_label(event, label, "dB"))
         gain_slider.bind("<ButtonRelease-1>", lambda event, band=band_name: self.update_band_value(band))
         gain_slider.set(params['gain'])
-        gain_slider.pack()
 
-        # Lưu thông tin của dải tần
+        # Lưu thông tin dải tần
         self.band_controls[band_name] = {
             'freq_slider': freq_slider,
             'q_slider': q_slider,
             'gain_slider': gain_slider,
+            'freq_value_label': freq_value_label,
+            'q_value_label': q_value_label,
+            'gain_value_label': gain_value_label,
         }
 
+    def update_label(self, event, label, unit):
+        """Cập nhật giá trị của label khi di chuyển slider"""
+        value = event.widget.get()
+        label.config(text=f"{value:.1f} {unit}".strip())
+
     def update_band_value(self, event=None):
-        # Cập nhật các giá trị trong ViewModel khi người dùng thay đổi
+        """Cập nhật các giá trị trong ViewModel khi người dùng thay đổi"""
         bands = {}
         for band_name, controls in self.band_controls.items():
             freq = controls['freq_slider'].get()
@@ -76,7 +104,7 @@ class EqualizerAdvancedView:
             bands[band_name] = {'freq': freq, 'Q': Q, 'gain': gain}
         self.bands = bands
         self.view_model.update_band_values(self.bands)
-        
+
     def update_view(self, event_name, data):
         if event_name == "eq_info_changed":
             print("eq_info_changed in equalizer_advanced_view")
@@ -85,5 +113,10 @@ class EqualizerAdvancedView:
                 controls['q_slider'].set(self.view_model.bands[band_name]['Q'])
                 controls['gain_slider'].set(self.view_model.bands[band_name]['gain'])
 
+                controls['freq_value_label'].config(text=f"{self.view_model.bands[band_name]['freq']:.0f} Hz")
+                controls['q_value_label'].config(text=f"{self.view_model.bands[band_name]['Q']:.1f}")
+                controls['gain_value_label'].config(text=f"{self.view_model.bands[band_name]['gain']:.1f} dB")
+
             f, hs = self.view_model.get_frequency_response()
             self.graph_view.update_graph(f, hs)  # Cập nhật đồ thị khi có sự thay đổi
+

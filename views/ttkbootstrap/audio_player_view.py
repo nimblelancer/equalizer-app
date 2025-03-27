@@ -123,10 +123,11 @@ class AudioPlayerView(ttk.LabelFrame):
             self.bars.append((bar, oval))  # Lưu cả 2 phần để cập nhật sau
 
     def update_random_spectrogram(self):
+        if not hasattr(self, "canvas") or not self.winfo_exists():  
+            return  # Dừng nếu cửa sổ đã bị đóng
+
         for i, (bar, oval) in enumerate(self.bars):
             new_height = random.randint(20, 120)
-            
-            # Giảm chiều cao bar để tránh oval bị tràn vào
             bar_height = new_height - 5
 
             # Cập nhật vị trí của thân bar
