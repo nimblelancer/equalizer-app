@@ -57,8 +57,10 @@ class Mainview:
         AudioGraphView(self.window, self.container.audio_graphs_viewmodel())
 
     def advanced_setting(self):
-        eq_setting_window = Toplevel(self.root)
-        EqualizerAdvancedView(eq_setting_window, self.container.advanced_equalizer_viewmodel())
+        self.window = Toplevel(self.root)
+        self.window.resizable(False, False)
+        self.window.title("Advanced Equalizer Settings")
+        EqualizerAdvancedView(self.window, self.container.advanced_equalizer_viewmodel())
 
     def apply_eq_for_file(self):
         audio_player_model = self.container.audio_player_model()
