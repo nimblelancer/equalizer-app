@@ -59,8 +59,8 @@ class EqualizerBasicView(ttk.LabelFrame):
         self.turnon_frame.grid(row=2, column=0)
         
         # high low cut var
-        self.lowcut_var = ttk.IntVar(value=self.view_model.lowcut_apply)
-        self.highcut_var = ttk.IntVar(value=self.view_model.highcut_apply)
+        self.lowcut_var = ttk.IntVar(value=False)
+        self.highcut_var = ttk.IntVar(value=False)
         
          # Low cut và High cut slider
         self.freqcut_frame = ttk.Frame(self.first_row_frame)

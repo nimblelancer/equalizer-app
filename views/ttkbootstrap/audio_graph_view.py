@@ -14,11 +14,14 @@ from views.ttkbootstrap.graph_factory import GraphFactory
 class AudioGraphView:
     def __init__(self, root, view_model: AudioGraphViewModel):
         self.frame = ttk.Frame(root)
-        self.frame.pack(fill=ttk.BOTH, expand=True)
+        self.frame.grid(row=0, column=0, sticky="nsew")
 
+        root.grid_rowconfigure(0, weight=1)
+        root.grid_columnconfigure(0, weight=1)
+        
         # Tạo một frame chứa các button
         self.config_frame = ttk.Frame(self.frame)
-        self.config_frame.pack(pady=20)
+        self.config_frame.grid(row=0, column=0, columnspan=2, pady=10, sticky="ew")
 
         self.view_model = view_model
         self.view_model.add_view_listener(self)
@@ -83,11 +86,14 @@ class AudioGraphView:
     def create_graphs(self, frame):
         # Tạo Canvas để chứa các đồ thị
         canvas = ttk.Canvas(frame)
-        canvas.pack(side=ttk.LEFT, fill=ttk.BOTH, expand=True)
+        canvas.grid(row=1, column=0, sticky="nsew")
+        
+        frame.grid_rowconfigure(1, weight=1)
+        frame.grid_columnconfigure(0, weight=1)
 
         # Thêm Scrollbar vào canvas
         scrollbar = ttk.Scrollbar(frame, orient="vertical", command=canvas.yview)
-        scrollbar.pack(side=ttk.RIGHT, fill=ttk.Y)
+        scrollbar.grid(row=1, column=1, sticky="ns")
         canvas.configure(yscrollcommand=scrollbar.set)
 
         # Tạo một frame con để chứa các Canvas vẽ đồ thị
@@ -98,6 +104,9 @@ class AudioGraphView:
         rows = 7  # Số loại đồ thị
         cols = 2  # Original và filtered data
 
+        graph_frame.grid_columnconfigure(0, weight=1)
+        graph_frame.grid_columnconfigure(1, weight=1)
+        
         for i in range(7):
             # Tạo figure cho original và filtered data
             fig_original, ax_original = plt.subplots(figsize=(8, 4))
