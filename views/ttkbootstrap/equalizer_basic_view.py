@@ -53,85 +53,29 @@ class EqualizerBasicView(ttk.LabelFrame):
         # Checkbox
         self.first_row_frame = ttk.Frame(self)
         self.first_row_frame.grid(row=2, column=0, padx=5, pady=5)
+        
 
         self.turnon_frame = ttk.Frame(self.first_row_frame)
         self.turnon_frame.grid(row=2, column=0)
-
-        # Enable Equalizer
-        self.eqapply_var = ttk.IntVar(value=self.view_model.eq_apply)
-        self.eq_checkbox = ttk.Checkbutton(
-            self.turnon_frame,
-            text="Enable Equalizer",
-            variable=self.eqapply_var,
-            command=self.update_equalizer,
-            bootstyle="success"
-        )
-        self.eq_checkbox.grid(row=0, column=0, padx=5, pady=2, sticky="w")
-
-        # Enable Low Cut
-        self.lowcut_var = ttk.IntVar(value=self.view_model.lowcut_apply)
         
-        self.lowcut_checkbox = ttk.Checkbutton(
-            self.turnon_frame,
-            text="Enable Low Cut",
-            variable=self.lowcut_var,
-            command=self.update_equalizer,
-        )
-        self.lowcut_checkbox.grid(row=0, column=1, padx=5, pady=2, sticky="w")
-
-        # Enable High Cut
-        self.highcut_var = ttk.IntVar(value=self.view_model.highcut_apply)
-        self.highcut_checkbox = ttk.Checkbutton(
-            self.turnon_frame,
-            text="Enable High Cut",
-            variable=self.highcut_var,
-            command=self.update_equalizer,
-            bootstyle="primary"
-        )
-        self.highcut_checkbox.grid(row=0, column=2, padx=5, pady=2, sticky="w")
-
-        # Small Clip
-        self.smallclip_var = ttk.IntVar(value=0)
-        self.smallclip_checkbox = ttk.Checkbutton(
-            self.turnon_frame,
-            text="Small Clip",
-            variable=self.smallclip_var,
-            command=self.update_adaptive_settings
-        )
-        self.smallclip_checkbox.grid(row=1, column=0, padx=5, pady=2, sticky="w")
-
-        # Adaptive LMS
-        self.adaptive_lms_var = ttk.IntVar(value=0)
-        self.adaptive_lms_checkbox = ttk.Checkbutton(
-            self.turnon_frame,
-            text="Adaptive LMS",
-            variable=self.adaptive_lms_var,
-            command=self.update_adaptive_settings
-        )
-        self.adaptive_lms_checkbox.grid(row=1, column=1, padx=5, pady=2, sticky="w")
-
-        # Adaptive Notch
-        self.adaptive_notch_var = ttk.IntVar(value=0)
-        self.adaptive_notch_checkbox = ttk.Checkbutton(
-            self.turnon_frame,
-            text="Adaptive Notch",
-            variable=self.adaptive_notch_var,
-            command=self.update_adaptive_settings
-        )
-        self.adaptive_notch_checkbox.grid(row=1, column=2, padx=5, pady=2, sticky="w")
-
-        # Low cut và High cut slider
+        # high low cut var
+        self.lowcut_var = ttk.IntVar(value=False)
+        self.highcut_var = ttk.IntVar(value=False)
+        
+         # Low cut và High cut slider
         self.freqcut_frame = ttk.Frame(self.first_row_frame)
         self.freqcut_frame.grid(row=3, column=0, columnspan=2, pady=5)
 
         # Label hiển thị Low Cut
         self.lowcut_label = ttk.Label(self.freqcut_frame, text="Low Cut:")
         self.lowcut_label.grid(row=0, column=0, padx=(10, 5), sticky="e")
+        
 
         # Giá trị hiển thị của Low Cut
         self.lowcut_value = IntVar(value=self.view_model.lowcut_freq)
         self.lowcut_value_label = ttk.Label(self.freqcut_frame, textvariable=self.lowcut_value)
         self.lowcut_value_label.grid(row=0, column=2, padx=(5, 10), sticky="w")
+        
 
         # Low Cut Slider
         self.lowcut_slider = ttk.Scale(
@@ -146,6 +90,7 @@ class EqualizerBasicView(ttk.LabelFrame):
         self.lowcut_slider.bind("<ButtonRelease-1>", lambda e: self.update_equalizer())
         self.lowcut_slider.grid(row=0, column=1, pady=10, padx=5, sticky="w")
         self.lowcut_slider.set(self.view_model.lowcut_freq)
+        
 
         # Label hiển thị High Cut
         self.highcut_label = ttk.Label(self.freqcut_frame, text="High Cut:")
@@ -169,6 +114,38 @@ class EqualizerBasicView(ttk.LabelFrame):
         self.highcut_slider.bind("<ButtonRelease-1>", lambda e: self.update_equalizer())
         self.highcut_slider.grid(row=1, column=1, pady=10, padx=5, sticky="e")
         self.highcut_slider.set(self.view_model.highcut_freq)
+        
+        
+        #  Hide Low Cut & High Cut
+        self.lowcut_label.grid_remove()
+        self.lowcut_value_label.grid_remove() 
+        self.lowcut_slider.grid_remove()
+        
+        self.highcut_label.grid_remove()
+        self.highcut_value_label.grid_remove()
+        self.highcut_slider.grid_remove() 
+        
+        # Enable Equalizer
+        self.eqapply_var = ttk.IntVar(value=self.view_model.eq_apply)
+        self.eq_checkbox = ttk.Checkbutton(
+            self.turnon_frame,
+            text="Enable Equalizer",
+            variable=self.eqapply_var,
+            command=self.update_equalizer,
+            bootstyle="primary"
+        )
+        self.eq_checkbox.grid(row=0, column=0, padx=5, pady=2, sticky="w")
+
+        #  Enable Noise Suppression
+        self.noise_apply_var = ttk.IntVar(value=False)
+        self.ns_checkbox = ttk.Checkbutton(
+            self.turnon_frame,
+            text="Enable Noise Suppression",
+            variable=self.noise_apply_var,
+            command=self.update_noise_settings,
+            bootstyle="primary"
+        )
+        self.ns_checkbox.grid(row=0, column=1, padx=5, pady=2, sticky="e")
 
         self.view_model.add_view_listener(self)
 
@@ -245,7 +222,7 @@ class EqualizerBasicView(ttk.LabelFrame):
             for band, slider in self.sliders.items():
                 slider.set(self.view_model.band_gains[band])
 
-    def update_adaptive_settings(self):
+    def update_noise_settings(self):
         pass
 
     def apply_preset(self):
