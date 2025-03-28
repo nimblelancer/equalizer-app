@@ -53,10 +53,78 @@ class EqualizerBasicView(ttk.LabelFrame):
         # Checkbox
         self.first_row_frame = ttk.Frame(self)
         self.first_row_frame.grid(row=2, column=0, padx=5, pady=5)
+        
 
         self.turnon_frame = ttk.Frame(self.first_row_frame)
         self.turnon_frame.grid(row=2, column=0)
+        
+        # high low cut var
+        self.lowcut_var = ttk.IntVar(value=self.view_model.lowcut_apply)
+        self.highcut_var = ttk.IntVar(value=self.view_model.highcut_apply)
+        
+         # Low cut và High cut slider
+        self.freqcut_frame = ttk.Frame(self.first_row_frame)
+        self.freqcut_frame.grid(row=3, column=0, columnspan=2, pady=5)
 
+        # Label hiển thị Low Cut
+        self.lowcut_label = ttk.Label(self.freqcut_frame, text="Low Cut:")
+        self.lowcut_label.grid(row=0, column=0, padx=(10, 5), sticky="e")
+        
+
+        # Giá trị hiển thị của Low Cut
+        self.lowcut_value = IntVar(value=self.view_model.lowcut_freq)
+        self.lowcut_value_label = ttk.Label(self.freqcut_frame, textvariable=self.lowcut_value)
+        self.lowcut_value_label.grid(row=0, column=2, padx=(5, 10), sticky="w")
+        
+
+        # Low Cut Slider
+        self.lowcut_slider = ttk.Scale(
+            self.freqcut_frame,
+            from_=1,
+            to=100,
+            orient=HORIZONTAL,
+            length=150,
+            bootstyle="primary",
+            command=lambda v: self.lowcut_value.set(int(float(v)))  # Cập nhật giá trị
+        )
+        self.lowcut_slider.bind("<ButtonRelease-1>", lambda e: self.update_equalizer())
+        self.lowcut_slider.grid(row=0, column=1, pady=10, padx=5, sticky="w")
+        self.lowcut_slider.set(self.view_model.lowcut_freq)
+        
+
+        # Label hiển thị High Cut
+        self.highcut_label = ttk.Label(self.freqcut_frame, text="High Cut:")
+        self.highcut_label.grid(row=1, column=0, padx=(10, 5), sticky="e")
+
+        # Giá trị hiển thị của High Cut
+        self.highcut_value = IntVar(value=self.view_model.highcut_freq)
+        self.highcut_value_label = ttk.Label(self.freqcut_frame, textvariable=self.highcut_value)
+        self.highcut_value_label.grid(row=1, column=2, padx=(5, 10), sticky="w")
+
+        # High Cut Slider
+        self.highcut_slider = ttk.Scale(
+            self.freqcut_frame,
+            from_=5,
+            to=20,
+            orient=HORIZONTAL,
+            length=150,
+            bootstyle="primary",
+            command=lambda v: self.highcut_value.set(int(float(v)))  # Cập nhật giá trị
+        )
+        self.highcut_slider.bind("<ButtonRelease-1>", lambda e: self.update_equalizer())
+        self.highcut_slider.grid(row=1, column=1, pady=10, padx=5, sticky="e")
+        self.highcut_slider.set(self.view_model.highcut_freq)
+        
+        
+        #  Hide Low Cut & High Cut
+        self.lowcut_label.grid_remove()
+        self.lowcut_value_label.grid_remove() 
+        self.lowcut_slider.grid_remove()
+        
+        self.highcut_label.grid_remove()
+        self.highcut_value_label.grid_remove()
+        self.highcut_slider.grid_remove() 
+        
         # Enable Equalizer
         self.eqapply_var = ttk.IntVar(value=self.view_model.eq_apply)
         self.eq_checkbox = ttk.Checkbutton(
