@@ -4,7 +4,9 @@ from core.player.base_audio_stream import G2AudioStream
 from models.base_model import G2BaseModel
 import wave
 from core.player.equalizer_service2 import EqualizerService2
+from core.player.noise_suppression_service import NoiseSuppressionService
 from typing import Type
+from scipy.signal import wiener, butter, filtfilt, get_window
 from config_manager import ConfigManager
 import librosa
 import soundfile as sf
@@ -24,7 +26,11 @@ class AudioPlayerState:
     RECORDING = 3
 
 class AudioPlayerModel(G2BaseModel):
-    def __init__(self, audio_stream_class: Type[G2AudioStream], eq_service: EqualizerService2, config_manager: ConfigManager):
+    def __init__(self, 
+            audio_stream_class: Type[G2AudioStream],
+            eq_service: EqualizerService2,
+            noise_service: NoiseSuppressionService,
+            config_manager: ConfigManager):
         super().__init__()
         self.config_manager = config_manager
         self.state = AudioPlayerState.STOPPED
@@ -32,6 +38,7 @@ class AudioPlayerModel(G2BaseModel):
         self.wave_file = None
         self.audio_stream_class = audio_stream_class
         self.eq_service = eq_service
+        self.noise_service = noise_service
         self.selected_file = "data/audio.wav"
         self.audio_thread_instance = None
         self.lock = threading.Lock()
@@ -184,8 +191,9 @@ class AudioPlayerModel(G2BaseModel):
             audio_data = np.frombuffer(data, dtype=np.int16)
             # filtered_data = audio_data
 
+            filtered_data = self.noise_service.suppress_noise(audio_data)
             # Áp dụng bộ lọc cho dữ liệu âm thanh
-            filtered_data = self.eq_service.equalize(audio_data)
+            filtered_data = self.eq_service.equalize(filtered_data)
 
             # Điều chỉnh âm lượng của dữ liệu âm thanh trước khi ghi vào stream
             filtered_data = np.clip(filtered_data * self.volume, -32768, 32767)  # Áp dụng volume và giới hạn giá trị âm thanh
@@ -249,9 +257,12 @@ class AudioPlayerModel(G2BaseModel):
 
                 audio_data = np.frombuffer(data, dtype=np.int16)
 
+                # audio_data = self.noise_reduction(audio_data)
+                filtered_data = self.noise_service.suppress_noise(audio_data)
+                # Áp dụng bộ lọc cho dữ liệu âm thanh
+                filtered_data = self.eq_service.equalize(filtered_data)
 
                 # Áp dụng EQ filter nếu cần
-                filtered_data = self.eq_service.equalize(audio_data)
                 filtered_data = np.clip(filtered_data * self.volume, -32768, 32767)
 
                 if threshole_clip_small > 0:

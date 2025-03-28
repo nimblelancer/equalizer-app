@@ -5,17 +5,17 @@ class G2FilterDesign(ABC):
         self.fs = fs
 
     @abstractmethod
-    def design_lowpass_filter(self, fc, order=None, Q=0.707):
+    def design_lowpass_filter(self, fc, order=None):
         pass
 
     @abstractmethod
-    def design_highpass_filter(self, fc, order=None, Q=0.707):
+    def design_highpass_filter(self, fc, order=None):
         pass
 
     @abstractmethod
-    def design_bandpass_filter(self, f_center=None, fc_low=None, fc_high=None, gain=1.0, order=4, Q=0.707):
+    def design_bandstop_filter(self, flow=None, fhigh=None, gain=1.0, order=4):
         pass
 
     @abstractmethod
-    def design_bandnotch_filter(self, f_center=None, fc_low=None, fc_high=None, order=4, Q=0.707):
+    def design_notch_filter(self, fc=None, Q=30, order=4):
         pass

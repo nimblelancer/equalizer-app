@@ -86,7 +86,7 @@ class Mainview:
         self.window = Toplevel(self.root)
         self.window.resizable(False, False)
         self.window.title("Noise Settings")
-        NoiseSuppressionView(self.window, self.container.noise_suppression_viewmodel())
+        NoiseSuppressionView(self.window, self.container.audio_noise_viewmodel())
 
     def reset_preset(self):
         pass
