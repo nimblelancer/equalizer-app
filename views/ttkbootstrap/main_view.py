@@ -7,6 +7,7 @@ from views.ttkbootstrap.equalizer_basic_view import EqualizerBasicView
 import threading
 from views.ttkbootstrap.audio_graph_view import AudioGraphView
 from views.ttkbootstrap.equalizer_advanced_view import EqualizerAdvancedView
+from views.ttkbootstrap.noise_suppession_view import NoiseSuppressionView
 
 
 class Mainview:
@@ -25,17 +26,23 @@ class Mainview:
         self.additional_setting_btn = ttk.Frame()
         self.additional_setting_btn.grid(row=2, column=0, columnspan=1, padx=10, pady=10)
 
-        self.advance_setting_btn = ttk.Button(self.additional_setting_btn, text="Advanced Setting", command=self.advanced_setting, bootstyle='outline-primary')
+        self.advance_setting_btn = ttk.Button(self.additional_setting_btn, text="Noise Setting", command=self.noise_setting, bootstyle='outline-primary')
         self.advance_setting_btn.grid(row=0, column=0, columnspan=1,  padx=10)
 
-        self.show_graph_btn = ttk.Button(self.additional_setting_btn, text="Show Graph", command=self.show_graph, bootstyle='outline-primary')
-        self.show_graph_btn.grid(row=0, column=1, columnspan=1, padx=10)
+        self.advance_setting_btn = ttk.Button(self.additional_setting_btn, text="EQ Setting", command=self.advanced_setting, bootstyle='outline-primary')
+        self.advance_setting_btn.grid(row=0, column=1, columnspan=1,  padx=10)
 
-        self.apply_eq_file_btn = ttk.Button(self.additional_setting_btn, text="EQ for File", command=self.apply_eq_for_file, bootstyle='outline-primary')
+        self.apply_eq_file_btn = ttk.Button(self.additional_setting_btn, text="EQ File", command=self.apply_eq_for_file, bootstyle='outline-primary')
         self.apply_eq_file_btn.grid(row=0, column=2, columnspan=1, padx=10)
+
+        self.show_graph_btn = ttk.Button(self.additional_setting_btn, text="Show Graph", command=self.show_graph, bootstyle='outline-primary')
+        self.show_graph_btn.grid(row=0, column=3, columnspan=3, padx=10)
         
-        self.reset_btn = ttk.Button(self.additional_setting_btn, text="Reset", command=self.show_graph, bootstyle='warning-outline')
-        self.reset_btn.grid(row=0, column=3, columnspan=1, padx=10)
+        self.reset_frame = ttk.Frame()
+        self.reset_frame.grid(row=3, column=0, columnspan=1, padx=10, pady=5)
+
+        self.reset_btn = ttk.Button(self.reset_frame, text="Reset", command=self.show_graph, bootstyle='warning-outline')
+        self.reset_btn.grid(row=0, column=0, padx=5, pady=(0, 10))
 
         root.protocol("WM_DELETE_WINDOW", self.on_close)
         
@@ -74,6 +81,12 @@ class Mainview:
         self.window.resizable(False, False)  # Ngăn kéo thả cửa sổ
         self.window.title("Advanced Equalizer Settings")
         EqualizerAdvancedView(self.window, self.container.advanced_equalizer_viewmodel())
+
+    def noise_setting(self):
+        self.window = Toplevel(self.root)
+        self.window.resizable(False, False)
+        self.window.title("Noise Settings")
+        NoiseSuppressionView(self.window, self.container.noise_suppression_viewmodel())
 
     def reset_preset(self):
         pass

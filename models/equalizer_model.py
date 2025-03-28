@@ -41,7 +41,7 @@ class EqualizerModel(G2BaseModel):
                 else:
                     print("Dữ liệu không đúng định dạng trong file JSON.")
         except FileNotFoundError:
-            print(f"File {file_path} không tồn tại.")
+            print(f"File {json_file} không tồn tại.")
         except json.JSONDecodeError:
             print("Lỗi giải mã JSON. Hãy kiểm tra lại định dạng JSON trong file.")
         except Exception as e:
@@ -65,3 +65,40 @@ class EqualizerModel(G2BaseModel):
 
     def get_filter_coefficients(self):
         return self.eq_service.get_filter_coefficients()
+    
+class NoiseSuppressionModel(G2BaseModel):
+    def __init__(self, eq_service: EqualizerService2, config_manager: ConfigManager,):
+
+        super().__init__()
+        self.eq_service = eq_service
+        self.config_manager = config_manager
+        
+        self.highcut_enabled = False
+        self.lowcut_enabled = False
+        self.amplitude_cut_enabled = False
+        self.hum_cut_enabled = False
+        self.bandstop_enabled = False
+        self.bandnotch_enabled = False
+        self.lms_enabled = False
+        
+        self.highcut_freq = 20000
+        self.lowcut_freq = 20
+        self.hum_freq = 60
+        self.bandstop_list = []
+        self.bandnotch_list = []
+        self.q_factor = 1.0
+        self.amplitude_cut = 0.5  # Biên độ cắt mặc định
+
+    def apply_filters(self):
+        filters_applied = {
+            "Highcut": self.highcut_enabled,
+            "Lowcut": self.lowcut_enabled,
+            "Amplitude Cut": self.amplitude_cut_enabled,
+            "Hum Cut": self.hum_cut_enabled,
+            "Band Stop": self.bandstop_list,
+            "Band Notch": self.bandnotch_list,
+            "Q Factor": self.q_factor,
+            "LMS Filter": self.lms_enabled,
+            "Amplitude Cut Level": self.amplitude_cut
+        }
+        return filters_applied
