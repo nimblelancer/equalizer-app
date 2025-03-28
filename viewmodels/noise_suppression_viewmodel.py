@@ -95,6 +95,7 @@ class NoiseSuppressionViewModel:
         print("val updated")
 
     def add_bandstop(self, freq):
+        print(f'Freq: {freq} bandstop_list: {self.model.bandstop_list}')
         if freq and freq not in self.model.bandstop_list:
             self.model.bandstop_list.append(freq)
 
@@ -102,13 +103,12 @@ class NoiseSuppressionViewModel:
         if freq and freq not in self.model.bandnotch_list:
             self.model.bandnotch_list.append(freq)
 
-    def remove_bandstop(self, freq):
-        if freq in self.model.bandstop_list:
-            self.model.bandstop_list.remove(freq)
+    def remove_bandstop(self):
+        self.model.bandstop_list.clear()
+            
 
-    def remove_bandnotch(self, freq):
-        if freq in self.model.bandnotch_list:
-            self.model.bandnotch_list.remove(freq)
-
+    def remove_bandnotch(self):
+        self.model.bandnotch_list.clear()
+            
     def get_filter_settings(self):
         return self.model.apply_filters()

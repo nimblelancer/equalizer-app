@@ -207,6 +207,8 @@ class AudioPlayerModel(G2BaseModel):
             with self.lock:  # Locking the stream to prevent race conditions while writing
                 # Check if the audio is still in PLAYING state
                 if self.get_state() == AudioPlayerState.PLAYING:
+                    if np.isnan(filtered_data).any() or np.isinf(filtered_data).any():
+                        print("Filtered data contains NaN or Inf values!")
                     self.audio_stream.write(filtered_data.astype(np.int16).tobytes())
 
             data = wf.readframes(audio_chunk_size)
@@ -339,17 +341,19 @@ class AudioPlayerModel(G2BaseModel):
         # Đọc file WAV bằng soundfile (hỗ trợ đa kênh tốt hơn wave)
         audio_data, samplerate = sf.read(input_path, dtype='int16')
 
-        # Nếu âm thanh là stereo (2 kênh), tách từng kênh để xử lý riêng
-        if len(audio_data.shape) > 1:
-            num_channels = audio_data.shape[1]  # Số kênh
-            filtered_data = np.zeros_like(audio_data)
+        # # Nếu âm thanh là stereo (2 kênh), tách từng kênh để xử lý riêng
+        # if len(audio_data.shape) > 1:
+        #     num_channels = audio_data.shape[1]  # Số kênh
+        #     filtered_data = np.zeros_like(audio_data)
 
-            for ch in range(num_channels):
-                filtered_data[:, ch] = self.eq_service.equalize(audio_data[:, ch])
+        #     for ch in range(num_channels):
+        #         filtered_data[:, ch] = self.eq_service.equalize(audio_data[:, ch])
 
-        else:
-            # Xử lý âm thanh mono
-            filtered_data = self.eq_service.equalize(audio_data)
+        # else:
+        #     # Xử lý âm thanh mono
+        #     filtered_data = self.eq_service.equalize(audio_data)
+        filtered_data = self.noise_service.suppress_noise(audio_data)
+        filtered_data = self.eq_service.equalize(filtered_data)
 
         # Đảm bảo dữ liệu sau khi xử lý không bị vượt quá giới hạn int16
         filtered_data = np.clip(filtered_data, -32768, 32767).astype(np.int16)

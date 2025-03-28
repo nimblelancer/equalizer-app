@@ -61,16 +61,20 @@ class NoiseSuppressionView(ttk.Frame):
 
         # Band Stop Filter
         self.bandstop_var = tk.BooleanVar()
+        self.bandstop_value = []
         ttk.Checkbutton(self, text="Enable Band Stop Filter", variable=self.bandstop_var,  command=self.update_noise_setting).grid(row=8, column=0, sticky="w", padx=10, pady=5,)
         ttk.Button(self, text="Add Band Stop Frequency", bootstyle="outline-primary", command=self.add_bandstop).grid(row=9, column=0, sticky="we", padx=10, pady=5,  )
-        ttk.Label(self, text="Bandstop Frequencies:").grid(row=10, column=0, sticky="w", padx=10, pady=5)
+        self.bandstop_label = ttk.Label(self, text="Bandstop Frequencies:")
+        self.bandstop_label.grid(row=10, column=0, sticky="w", padx=10, pady=5)
         ttk.Button(self, text="Remove Selected Bandstop Frequency", bootstyle="outline-warning", command=self.remove_bandstop).grid(row=11, column=0, sticky="we", padx=10, pady=5, )
         self.bandstop_var.set(self.view_model.bandstop_enabled)
         # Band Notch Filter
         self.bandnotch_var = tk.BooleanVar()
-        ttk.Checkbutton(self, text="Enable Band Notch Filter", variable=self.bandnotch_var).grid(row=12, column=0, sticky="w", padx=10, pady=5)
+        self.bandnotch_value = []
+        ttk.Checkbutton(self, text="Enable Band Notch Filter", variable=self.bandnotch_var, command=self.update_noise_setting).grid(row=12, column=0, sticky="w", padx=10, pady=5)
         ttk.Button(self, text="Add Notch Frequency", bootstyle="outline-primary", command=self.add_bandnotch).grid(row=13, column=0, sticky="we", padx=10, pady=5, )
-        ttk.Label(self, text="Bandnotch Frequencies:").grid(row=14, column=0, sticky="w", padx=10, pady=5)
+        self.bandnotch_label = ttk.Label(self, text="Bandnotch Frequencies:")
+        self.bandnotch_label.grid(row=14, column=0, sticky="w", padx=10, pady=5)
         ttk.Button(self, text="Remove Selected Notch Frequency", bootstyle="outline-warning", command=self.remove_bandnotch).grid(row=15, column=0, sticky="we", padx=10, pady=5, )
         self.bandnotch_var.set(self.view_model.bandnotch_enabled)
         # Q Factor Slider
@@ -93,46 +97,41 @@ class NoiseSuppressionView(ttk.Frame):
         self.hum_freq_slider.bind("<ButtonRelease-1>", lambda event: self.update_noise_setting())
         self.q_factor_slider.bind("<ButtonRelease-1>", lambda event: self.update_noise_setting())
 
-    def on_filter_change(self):
-        self.view_model.update_model_from_view(
-            self.highcut_var.get(),
-            self.lowcut_var.get(),
-            self.amplitude_cut_var.get(),
-            self.hum_cut_var.get(),
-            self.bandstop_var.get(),
-            self.bandnotch_var.get(),
-            self.lms_var.get(),
-            self.highcut_slider.get(),
-            self.lowcut_slider.get(),
-            self.hum_freq_slider.get(),
-            self.q_factor_slider.get(),
-            self.amplitude_cut_slider.get()
-        )
-
     def add_bandstop(self):
-        freq = simpledialog.askinteger("Input", "Enter Band Stop Frequency (Hz):")
-        if freq is not None:
-            self.view_model.add_bandstop(freq)
-        self.update_bandstop_display()
+        user_input = simpledialog.askstring("Input", "Enter two Band Stop Frequencies (Hz), separated by a comma:")
+        
+        if user_input:
+            try:
+                # Tách giá trị và chuyển thành số nguyên
+                freqs = [int(x.strip()) for x in user_input.split(",")]
+
+                # Kiểm tra điều kiện hợp lệ (đúng 2 số nguyên, lớn hơn 0)
+                if len(freqs) == 2 and all(f > 0 for f in freqs):
+                    bandstop_tuple = tuple(freqs)
+                    self.view_model.add_bandstop(bandstop_tuple)
+                    self.bandstop_value.append(bandstop_tuple)
+                    self.update_bandstop_display()
+                else:
+                    messagebox.showerror("Error", "Please enter exactly two positive integers separated by a comma.")
+            
+            except ValueError:
+                messagebox.showerror("Error", "Invalid input! Please enter two integers separated by a comma.")
 
     def remove_bandstop(self):
         # Tạo giao diện chọn tần số cần xóa
-        freq = simpledialog.askinteger("Input", "Enter Band Stop Frequency to Remove (Hz):")
-        if freq is not None:
-            self.view_model.remove_bandstop(freq)
+        self.view_model.remove_bandstop()
         self.update_bandstop_display()
 
     def add_bandnotch(self):
         freq = simpledialog.askinteger("Input", "Enter Notch Frequency (Hz):")
         if freq is not None:
             self.view_model.add_bandnotch(freq)
-        self.update_bandnotch_display()
+            self.bandnotch_value.append(freq)
+            self.update_bandnotch_display()
 
     def remove_bandnotch(self):
         # Tạo giao diện chọn tần số cần xóa
-        freq = simpledialog.askinteger("Input", "Enter Notch Frequency to Remove (Hz):")
-        if freq is not None:
-            self.view_model.remove_bandnotch(freq)
+        self.view_model.remove_bandnotch()
         self.update_bandnotch_display()
 
     def apply_filters(self):
@@ -159,9 +158,9 @@ class NoiseSuppressionView(ttk.Frame):
             self.hum_cut_var.get(),
             self.hum_freq_slider.get(),
             self.bandstop_var.get(),
-            None,
+            self.bandstop_value,
             self.bandnotch_var.get(),
-            None,
+            self.bandnotch_value,
             self.q_factor_slider.get(),
             self.lms_var.get()
         )
