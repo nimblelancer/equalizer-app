@@ -43,7 +43,7 @@ class EqualizerModel(G2BaseModel):
         self.hum_freq = 60
         self.bandstop_list = []
         self.bandnotch_list = []
-        self.q_factor = 1.0
+        self.q_factor = 20.0
         self.amplitude_cut = 100 
 
     def load_bands_from_json(self, genre):
